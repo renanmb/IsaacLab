@@ -15,8 +15,10 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 # Configuration
 ##
 
-CARTPOLE_CFG = ArticulationCfg(
+CUSTOM_CARTPOLE_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
+        # replace f to r
+        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Classic/Cartpole/cartpole.usd",
         usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Classic/Cartpole/cartpole.usd",
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
