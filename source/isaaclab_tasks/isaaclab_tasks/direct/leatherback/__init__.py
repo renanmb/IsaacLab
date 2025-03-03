@@ -10,7 +10,7 @@ Cartpole balancing environment.
 import gymnasium as gym
 
 from . import agents
-from leatherback_env import *
+from .leatherback_env import *
 from .leatherback_go_through_poses import LeatherbackGoThroughPosesEnv, LeatherbackGoThroughPosesEnvCfg
 from .leatherback_go_through_positions import LeatherbackGoThroughPositionsEnv, LeatherbackGoThroughPositionsEnvCfg
 from .leatherback_go_to_pose import LeatherbackGoToPoseEnv, LeatherbackGoToPoseEnvCfg
@@ -43,7 +43,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-GoToPosition-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackGoToPositionEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackGoToPositionEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackGoToPositionEnvCfg,
@@ -56,7 +56,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-GoToPose-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackGoToPoseEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackGoToPoseEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackGoToPoseEnvCfg,
@@ -69,7 +69,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-TrackVelocities-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackTrackVelocitiesEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackTrackVelocitiesEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackTrackVelocitiesEnvCfg,
@@ -82,7 +82,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-GoThroughPositions-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackGoThroughPositionsEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackGoThroughPositionsEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackGoThroughPositionsEnvCfg,
@@ -95,7 +95,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-GoThroughPoses-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackGoThroughPosesEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackGoThroughPosesEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackGoThroughPosesEnvCfg,
@@ -108,7 +108,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-RaceWaypoints-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackRaceWaypointsEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackRaceWaypointsEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackRaceWaypointsEnvCfg,
@@ -121,7 +121,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-RaceWayposes-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackRaceWayposesEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackRaceWayposesEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackRaceWayposesEnvCfg,
@@ -134,7 +134,7 @@ gym.register(
 
 gym.register(
     id="Isaac-Leatherback-PushBlock-Direct-v0",
-    entry_point="omni.isaac.lab_tasks.direct.leatherback:LeatherbackPushBlockEnv",
+    entry_point="isaaclab_tasks.direct.leatherback:LeatherbackPushBlockEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": LeatherbackPushBlockEnvCfg,

@@ -5,9 +5,11 @@
 
 import torch
 
-from omni.isaac.lab.assets import Articulation
+# from omni.isaac.lab.assets import Articulation
+from isaaclab.assets import Articulation
 
-from omni.isaac.lab_tasks.rans import JetbotRobotCfg
+# from omni.isaac.lab_tasks.rans import JetbotRobotCfg
+from isaaclab_tasks.rans import JetbotRobotCfg
 
 from .robot_core import RobotCore
 

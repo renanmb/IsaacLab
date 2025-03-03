@@ -10,7 +10,8 @@ from .auto_env_gen_single import SingleEnv, SingleEnvCfg
 
 gym.register(
     id="Isaac-RANS-Single-v0",
-    entry_point="omni.isaac.lab_tasks.rans.environments.single:SingleEnv",
+    # entry_point="omni.isaac.lab_tasks.rans.environments.single:SingleEnv",
+    entry_point="isaaclab_tasks.rans.environments.single:SingleEnv",
     disable_env_checker=True,
     kwargs={
         "env_cfg_entry_point": SingleEnvCfg,

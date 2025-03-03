@@ -8,7 +8,8 @@ from .task_core import TaskCore  # noqa: F401, F403
 
 # isort: on
 
-from omni.isaac.lab_tasks.rans.utils.misc import factory
+# from omni.isaac.lab_tasks.rans.utils.misc import factory
+from isaaclab_tasks.rans.utils.misc import factory
 
 from .go_through_poses import GoThroughPosesTask  # noqa: F401, F403
 from .go_through_positions import GoThroughPositionsTask  # noqa: F401, F403

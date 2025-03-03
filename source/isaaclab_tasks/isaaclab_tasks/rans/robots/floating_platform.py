@@ -5,10 +5,13 @@
 
 import torch
 
-from omni.isaac.lab.assets import Articulation
-from omni.isaac.lab.utils import math as math_utils
+# from omni.isaac.lab.assets import Articulation
+# from omni.isaac.lab.utils import math as math_utils
+from isaaclab.assets import Articulation
+from isaaclab.utils import math as math_utils
 
-from omni.isaac.lab_tasks.rans import FloatingPlatformRobotCfg
+# from omni.isaac.lab_tasks.rans import FloatingPlatformRobotCfg
+from isaaclab_tasks.rans import FloatingPlatformRobotCfg
 
 from .robot_core import RobotCore
 

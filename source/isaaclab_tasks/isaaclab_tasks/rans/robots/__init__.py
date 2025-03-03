@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: BSD-3-Clause
 
-from omni.isaac.lab_tasks.rans.utils.misc import factory
+# from omni.isaac.lab_tasks.rans.utils.misc import factory
+from isaaclab_tasks.rans.utils.misc import factory
 
 from .floating_platform import FloatingPlatformRobot
 from .jetbot import JetbotRobot

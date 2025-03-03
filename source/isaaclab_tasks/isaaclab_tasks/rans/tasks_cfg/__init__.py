@@ -7,7 +7,8 @@
 from .task_core_cfg import TaskCoreCfg  # noqa: F401, F403
 
 # isort: on
-from omni.isaac.lab_tasks.rans.utils.misc import factory
+# from omni.isaac.lab_tasks.rans.utils.misc import factory
+from isaaclab_tasks.rans.utils.misc import factory
 
 from .go_through_poses_cfg import GoThroughPosesCfg  # noqa: F401, F403
 from .go_through_positions_cfg import GoThroughPositionsCfg  # noqa: F401, F403

@@ -6,10 +6,11 @@
 import torch
 from dataclasses import MISSING
 
-from omni.isaac.lab.assets import Articulation
+# from omni.isaac.lab.assets import Articulation
+from isaaclab.assets import Articulation
 
-from omni.isaac.lab_tasks.rans.utils import ScalarLogger
-
+# from omni.isaac.lab_tasks.rans.utils import ScalarLogger
+from isaaclab_tasks.rans.utils import ScalarLogger
 
 class RobotCore:
     def __init__(

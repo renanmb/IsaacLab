@@ -8,16 +8,25 @@ from __future__ import annotations
 import torch
 from collections.abc import Sequence
 
-import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.assets import Articulation
-from omni.isaac.lab.envs import DirectRLEnv, DirectRLEnvCfg
-from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.sim import SimulationCfg
-from omni.isaac.lab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
-from omni.isaac.lab.utils import configclass
+# import omni.isaac.lab.sim as sim_utils
+# from omni.isaac.lab.assets import Articulation
+# from omni.isaac.lab.envs import DirectRLEnv, DirectRLEnvCfg
+# from omni.isaac.lab.scene import InteractiveSceneCfg
+# from omni.isaac.lab.sim import SimulationCfg
+# from omni.isaac.lab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
+# from omni.isaac.lab.utils import configclass
 
-from omni.isaac.lab_tasks.rans import ROBOT_CFG_FACTORY, ROBOT_FACTORY, TASK_CFG_FACTORY, TASK_FACTORY
+# from omni.isaac.lab_tasks.rans import ROBOT_CFG_FACTORY, ROBOT_FACTORY, TASK_CFG_FACTORY, TASK_FACTORY
 
+import isaaclab.sim as sim_utils
+from isaaclab.assets import Articulation
+from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sim import SimulationCfg
+from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
+from isaaclab.utils import configclass
+
+from isaaclab_tasks.rans import ROBOT_CFG_FACTORY, ROBOT_FACTORY, TASK_CFG_FACTORY, TASK_FACTORY
 
 @configclass
 class SingleEnvCfg(DirectRLEnvCfg):

@@ -6,17 +6,23 @@
 import math
 import torch
 
-from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
-from omni.isaac.lab.utils.math import sample_random_sign, sample_uniform
+# from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
+# from omni.isaac.lab.utils.math import sample_random_sign, sample_uniform
+from isaaclab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
+from isaaclab.utils.math import sample_random_sign, sample_uniform
 
-from omni.isaac.lab_tasks.rans import RaceWaypointsCfg
-from omni.isaac.lab_tasks.rans.utils import TrackGenerator
+# from omni.isaac.lab_tasks.rans import RaceWaypointsCfg
+# from omni.isaac.lab_tasks.rans.utils import TrackGenerator
+from isaaclab_tasks.rans import RaceWaypointsCfg
+from isaaclab_tasks.rans.utils import TrackGenerator
 
 from .task_core import TaskCore
 
 EPS = 1e-6  # small constant to avoid divisions by 0 and log(0)
 
-
+####################################################################################
+# Need to fix the Markers to work with Isaaclab 2.0
+####################################################################################
 class RaceWaypointsTask(TaskCore):
     """
     Implements the RaceWaypoints task. The robot has to loop through a sequence of target positions.

@@ -17,7 +17,8 @@ from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
 from isaaclab.utils import configclass
 from isaaclab.utils.math import sample_uniform
 
-from omni.isaac.lab_tasks.rans import LeatherbackRobot, LeatherbackRobotCfg, RaceWaypointsCfg, RaceWaypointsTask
+# from omni.isaac.lab_tasks.rans import LeatherbackRobot, LeatherbackRobotCfg, RaceWaypointsCfg, RaceWaypointsTask
+from isaaclab_tasks.rans import LeatherbackRobot, LeatherbackRobotCfg, RaceWaypointsCfg, RaceWaypointsTask
 
 ############################################################################################################
 # Antoine's Code

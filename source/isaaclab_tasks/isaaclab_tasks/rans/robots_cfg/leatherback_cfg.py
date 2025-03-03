@@ -5,12 +5,15 @@
 
 import math
 
-from omni.isaac.lab.assets import ArticulationCfg
-from omni.isaac.lab.utils import configclass
+# from omni.isaac.lab.assets import ArticulationCfg
+# from omni.isaac.lab.utils import configclass
+from isaaclab.assets import ArticulationCfg
+from isaaclab.utils import configclass
 
 from .robot_core_cfg import RobotCoreCfg
 
-from omni.isaac.lab_assets import LEATHERBACK_CFG  # isort: skip
+# from omni.isaac.lab_assets import LEATHERBACK_CFG  # isort: skip
+from isaaclab_assets import LEATHERBACK_CFG  # isort: skip
 
 
 @configclass
