@@ -8,13 +8,14 @@ from __future__ import annotations
 import torch
 from collections.abc import Sequence
 
-import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.assets import Articulation
-from omni.isaac.lab.envs import DirectRLEnv, DirectRLEnvCfg
-from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.sim import SimulationCfg
-from omni.isaac.lab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
-from omni.isaac.lab.utils import configclass
+import isaaclab.sim as sim_utils
+from isaaclab.assets import Articulation, ArticulationCfg
+from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sim import SimulationCfg
+from isaaclab.sim.spawners.from_files import GroundPlaneCfg, spawn_ground_plane
+from isaaclab.utils import configclass
+from isaaclab.utils.math import sample_uniform
 
 from omni.isaac.lab_tasks.rans import LeatherbackRobot, LeatherbackRobotCfg, RaceWaypointsCfg, RaceWaypointsTask
 

@@ -10,6 +10,7 @@ Cartpole balancing environment.
 import gymnasium as gym
 
 from . import agents
+from leatherback_env import *
 from .leatherback_go_through_poses import LeatherbackGoThroughPosesEnv, LeatherbackGoThroughPosesEnvCfg
 from .leatherback_go_through_positions import LeatherbackGoThroughPositionsEnv, LeatherbackGoThroughPositionsEnvCfg
 from .leatherback_go_to_pose import LeatherbackGoToPoseEnv, LeatherbackGoToPoseEnvCfg
@@ -24,11 +25,11 @@ from .leatherback_track_velocities import LeatherbackTrackVelocitiesEnv, Leather
 ##
 
 gym.register(
-    id="CUSTOM_Isaac-Cartpole-Direct-v0",
-    entry_point=f"{__name__}.custom_cartpole_env:Custom_CartpoleEnv",
+    id="Isaac-Leatherback-Direct-v0",
+    entry_point=f"{__name__}.leatherback_env:LeatherbackEnv",
     disable_env_checker=True,
     kwargs={
-        "env_cfg_entry_point": f"{__name__}.custom_cartpole_env:Custom_CartpoleEnvCfg",
+        "env_cfg_entry_point": f"{__name__}.leatherback_env:LeatherbackEnvCfg",
         "rl_games_cfg_entry_point": f"{agents.__name__}:rl_games_ppo_cfg.yaml",
         "rsl_rl_cfg_entry_point": f"{agents.__name__}.rsl_rl_ppo_cfg:CartpolePPORunnerCfg",
         "skrl_cfg_entry_point": f"{agents.__name__}:skrl_ppo_cfg.yaml",
