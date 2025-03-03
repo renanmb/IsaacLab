@@ -35,8 +35,10 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     # simulation frames 120Hz
     sim: SimulationCfg = SimulationCfg(dt=1 / 120, render_interval=decimation)
 
+    # TODO
     # robot
     robot_cfg: ArticulationCfg = LEATHERBACK_CFG.replace(prim_path="/World/envs/env_.*/Robot")
+    # region Waypoints
     waypoint_cfg: VisualizationMarkersCfg = WAYPOINT_CFG
 
     throttle_dof_name = [
@@ -93,6 +95,7 @@ class LeatherbackEnv(DirectRLEnv):
         self._target_index = torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
 
     # TODO
+    # region Setup Scene
     # need to get the visualization markers
     def _setup_scene(self):
         self.leatherback = Articulation(self.cfg.robot_cfg)

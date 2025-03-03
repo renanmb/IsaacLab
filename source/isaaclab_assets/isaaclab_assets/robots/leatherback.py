@@ -21,8 +21,10 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 LEATHERBACK_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
         # Eric is usng a simpler Leatherback car
-        # usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd"
-        usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
+        # usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd",
+        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
+        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/source/assets/robots/leatherback_simple_better.usd",
+        usd_path="/home/goat/Documents/GitHub/renanmb/IsaacLab/leatherback_simple_better.usd,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
             max_linear_velocity=1000.0,
@@ -53,11 +55,11 @@ LEATHERBACK_CFG = ArticulationCfg(
     #  Need to add the correct actuators
     actuators={
         "throttle": ImplicitActuatorCfg(
-            joint_names_expr=["Wheel."],
+            joint_names_expr=["Wheel.*"],
             effort_limit=40000.0,
             velocity_limit=100.0,
             stiffness=0.0,
-            damping=10000.0, # very high dampening is required because it is a velocity controller
+            damping=100000.0, # very high dampening is required because it is a velocity controller
         ),
         "steering": ImplicitActuatorCfg(
             joint_names_expr=["Knuckle__Upright__front.*"], 
