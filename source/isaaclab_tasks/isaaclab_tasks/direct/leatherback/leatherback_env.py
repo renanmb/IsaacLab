@@ -92,16 +92,24 @@ class LeatherbackEnv(DirectRLEnv):
 
         self._target_index = torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
 
+    # TODO
+    # need to get the visualization markers
     def _setup_scene(self):
         self.leatherback = Articulation(self.cfg.robot_cfg)
+        # He created a python file to do the waypoints
         self.Waypoints = VisualizationMarkers(self.cfg.waypoints_cfg)
+        #  It is inspired on the repvious examples
+        # self.Cones = VisualizationMarkers(self.cfg.cone_cfg)
+        # self.Red_Arrows = VisualizationMarkers(self.cfg.red_arrow_cfg)
+        # self.Green_Arrows = VisualizationMarkers(self.cfg.green_arrow_cfg)
+        # self.Rew_Markers = VisualizationMarkers(self.cfg.rew_marker_cfg)
 
         # add ground plane
         spawn_ground_plane(prim_path="/World/ground", cfg=GroundPlaneCfg())
 
         # clone, filter and replicate
-        self.scene.clone_environments(copy_from_source=False)
-        self.scene.filter_collisions(global_prim_paths=[])
+        self.scene.clone_environments(copy_from_source=False) # Clones child environments from parent environment
+        self.scene.filter_collisions(global_prim_paths=[])    # Prevents environments from colliding with each other
 
         # add articulation to scene
         self.scene.articulations["Leatherback"] = self.leatherback
@@ -113,7 +121,22 @@ class LeatherbackEnv(DirectRLEnv):
     # TODO
     # Need to configure the PRE Physics
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
-        self.actions = self.action_scale * actions.clone()
+
+        throttle_scale = 1
+        throttle_max = 50.0
+        steering_scale = 0.1
+        steering_max = 0.75
+
+        self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
+        self._throttle_action += self._throttle_state
+        self.throttle_action = torch.clamp(self._throttle_action, -throttle_max, throttle_max * 0.1)
+        self._throttle_state = self._throttle_action
+
+        self._steering_action = actions[:, 0].repeat_interleave(4).reshape((-1, 2)) * steering_scale
+        self._steering_action += self._steering_state
+        self._steering_action = torch.clamp(self._steering_action, -steering_max, steering_max)
+        self._steering_state = self._steering_action
+        # self.actions = self.action_scale * actions.clone()
 
     # TODO
     def _apply_action(self) -> None:
@@ -121,6 +144,27 @@ class LeatherbackEnv(DirectRLEnv):
         self.leatherback.set_joint_velocity_target(self._throttle_action, joint_ids=self._throttle_dof_idx)
         self.leatherback.set_joint_position_target(self._steering_state, joint_ids=self._steering_dof_idx)
 
+    def quaternion_multiply(self, q1: torch.Tensor, q2: torch.Tensor) -> torch.Tensor:
+        """
+        Compute the element-wise quaternion multiplication of two batches of quaternions.
+
+        Args:
+            q1 (torch.Tensor): Tensor of shape [N, 4] representing N quaternions.
+            q2 (torch.Tensor): Tensor of shape [N, 4] representing N quaternions.
+
+        Returns:
+        torch.Tensor: Tensor of shape [N, 4] representing the resulting quaternions.
+        """
+        w1, x1, y1, z1 = q1.unbind(dim=1)
+        w2, x2, y2, z2 = q2.unbind(dim=1)
+
+        w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+        x = w1 * x2 + x1 * w2 + y1 * z2 - z1 * y2
+        y = w1 * y2 - x1 * z2 + y1 * w2 + z1 * x2
+        z = w1 * z2 + x1 * y2 - y1 * x2 + z1 * w2
+
+        return torch.stack([w, x, y, z], dim=1)
+    
     def _get_observations(self) -> dict:
 
         # position error
@@ -184,6 +228,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         # region debugging
         # Update Waypoints
+        # this is about the CONES 
         one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
         marker_indices = one_hot_encoded.view(-1).tolist()
         self.Waypoints.visualize(marker_indices=marker_indices)
