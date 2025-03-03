@@ -14,6 +14,7 @@ from .cart_double_pendulum import *
 from .cartpole import *
 from .custom_cartpole import *
 from .franka import *
+from .leatherback import *
 from .humanoid import *
 from .humanoid_28 import *
 from .kinova import *
