@@ -11,7 +11,7 @@ from isaaclab.utils import configclass
 from .robot_core_cfg import RobotCoreCfg
 
 # from omni.isaac.lab_assets import JETBOT_CFG  # isort: skip
-from isaaclab_assets import JETBOT_CFG  # isort: skip
+from isaaclab_assets.robots.jetbot  import JETBOT_CFG  # isort: skip
 
 
 @configclass

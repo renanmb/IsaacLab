@@ -6,11 +6,15 @@
 import torch
 from dataclasses import MISSING
 
-from omni.isaac.lab.scene import InteractiveScene
+# from omni.isaac.lab.scene import InteractiveScene
 
-from omni.isaac.lab_tasks.rans import RobotCore
-from omni.isaac.lab_tasks.rans.utils import PerEnvSeededRNG, ScalarLogger
+# from omni.isaac.lab_tasks.rans import RobotCore
+# from omni.isaac.lab_tasks.rans.utils import PerEnvSeededRNG, ScalarLogger
 
+from isaaclab.scene import InteractiveScene
+
+from isaaclab_tasks.rans import RobotCore
+from isaaclab_tasks.rans.utils import PerEnvSeededRNG, ScalarLogger
 
 class TaskCore:
     """

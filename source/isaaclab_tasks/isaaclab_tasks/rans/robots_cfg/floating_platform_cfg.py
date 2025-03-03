@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # from omni.isaac.lab_assets.floating_platform import FLOATING_PLATFORM_CFG
-from isaaclab_assets.floating_platform import FLOATING_PLATFORM_CFG
+from isaaclab_assets.robots.floating_platform import FLOATING_PLATFORM_CFG
 
 # from omni.isaac.lab.assets import ArticulationCfg
 # from omni.isaac.lab.utils import configclass

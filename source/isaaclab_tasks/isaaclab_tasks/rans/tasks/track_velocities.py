@@ -6,10 +6,15 @@
 import math
 import torch
 
-import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.markers import ARROW_CFG, VisualizationMarkers
+# import omni.isaac.lab.sim as sim_utils
+# from omni.isaac.lab.markers import ARROW_CFG, VisualizationMarkers
 
-from omni.isaac.lab_tasks.rans import TrackVelocitiesCfg
+# from omni.isaac.lab_tasks.rans import TrackVelocitiesCfg
+
+import isaaclab.sim as sim_utils
+from isaaclab.markers import ARROW_CFG, VisualizationMarkers
+
+from isaaclab_tasks.rans import TrackVelocitiesCfg
 
 from .task_core import TaskCore
 

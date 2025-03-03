@@ -10,7 +10,8 @@ import torch
 from collections.abc import Sequence
 
 from isaaclab_assets.robots.leatherback import LEATHERBACK_CFG
-from .Waypoint import WAYPOINT_CFG
+from .waypoint import WAYPOINT_CFG
+from isaaclab.markers import VisualizationMarkersCfg, VisualizationMarkers
 
 import isaaclab.sim as sim_utils
 from isaaclab.assets import Articulation, ArticulationCfg
@@ -100,7 +101,7 @@ class LeatherbackEnv(DirectRLEnv):
     def _setup_scene(self):
         self.leatherback = Articulation(self.cfg.robot_cfg)
         # He created a python file to do the waypoints
-        self.Waypoints = VisualizationMarkers(self.cfg.waypoints_cfg)
+        self.Waypoints = VisualizationMarkers(self.cfg.waypoint_cfg)
         #  It is inspired on the repvious examples
         # self.Cones = VisualizationMarkers(self.cfg.cone_cfg)
         # self.Red_Arrows = VisualizationMarkers(self.cfg.red_arrow_cfg)

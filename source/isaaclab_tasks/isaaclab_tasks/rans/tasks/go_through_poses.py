@@ -6,9 +6,15 @@
 import math
 import torch
 
-from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG, VisualizationMarkers
+# from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG, VisualizationMarkers
+from isaaclab.markers import VisualizationMarkers
+from isaaclab.markers.config import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG
+from isaaclab.markers.config import BICOLOR_DIAMOND_CFG, GREEN_ARROW_X_MARKER_CFG
 
-from omni.isaac.lab_tasks.rans import GoThroughPosesCfg
+import isaaclab.sim as sim_utils
+
+# from omni.isaac.lab_tasks.rans import GoThroughPosesCfg
+from isaaclab_tasks.rans import GoThroughPosesCfg
 
 from .task_core import TaskCore
 
@@ -580,6 +586,8 @@ class GoThroughPosesTask(TaskCore):
             0.5,
             0.5,
         )
+        # region MARKERs
+        # How to use the markers of different shapes
         goal_marker_cfg_red = PIN_ARROW_CFG.copy()
         robot_marker_cfg = BICOLOR_DIAMOND_CFG.copy()
         goal_marker_cfg_red.prim_path = f"/Visuals/Command/task_{self._task_uid}/next_goal"

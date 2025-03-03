@@ -6,11 +6,17 @@
 import math
 import torch
 
-from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG, VisualizationMarkers
-from omni.isaac.lab.utils.math import sample_random_sign
+# from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG, VisualizationMarkers
+# from omni.isaac.lab.utils.math import sample_random_sign
 
-from omni.isaac.lab_tasks.rans import RaceWayposesCfg
-from omni.isaac.lab_tasks.rans.utils import TrackGenerator
+# from omni.isaac.lab_tasks.rans import RaceWayposesCfg
+# from omni.isaac.lab_tasks.rans.utils import TrackGenerator
+
+from isaaclab.markers import BICOLOR_DIAMOND_CFG, PIN_ARROW_CFG, VisualizationMarkers
+from isaaclab.utils.math import sample_random_sign
+
+from isaaclab_tasks.rans import RaceWayposesCfg
+from isaaclab_tasks.rans.utils import TrackGenerator
 
 from .task_core import TaskCore
 

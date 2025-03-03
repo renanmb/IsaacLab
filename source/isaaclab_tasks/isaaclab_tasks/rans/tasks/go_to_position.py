@@ -6,9 +6,11 @@
 import math
 import torch
 
-from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
+# from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
+from isaaclab.markers import BICOLOR_DIAMOND_CFG, PIN_SPHERE_CFG, VisualizationMarkers
 
-from omni.isaac.lab_tasks.rans import GoToPositionCfg
+# from omni.isaac.lab_tasks.rans import GoToPositionCfg
+from isaaclab_tasks.rans import GoToPositionCfg
 
 from .task_core import TaskCore
 

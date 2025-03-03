@@ -6,12 +6,19 @@
 import math
 import torch
 
-from omni.isaac.lab.assets import RigidObject, RigidObjectCfg
-from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, CYLINDER_MARKER_CFG, VisualizationMarkers
-from omni.isaac.lab.scene import InteractiveScene
-from omni.isaac.lab.sim import CollisionPropertiesCfg, CuboidCfg, MassPropertiesCfg, RigidBodyPropertiesCfg
+# from omni.isaac.lab.assets import RigidObject, RigidObjectCfg
+# from omni.isaac.lab.markers import BICOLOR_DIAMOND_CFG, CYLINDER_MARKER_CFG, VisualizationMarkers
+# from omni.isaac.lab.scene import InteractiveScene
+# from omni.isaac.lab.sim import CollisionPropertiesCfg, CuboidCfg, MassPropertiesCfg, RigidBodyPropertiesCfg
 
-from omni.isaac.lab_tasks.rans import PushBlockCfg
+# from omni.isaac.lab_tasks.rans import PushBlockCfg
+
+from isaaclab.assets import RigidObject, RigidObjectCfg
+from isaaclab.markers import BICOLOR_DIAMOND_CFG, CYLINDER_MARKER_CFG, VisualizationMarkers
+from isaaclab.scene import InteractiveScene
+from isaaclab.sim import CollisionPropertiesCfg, CuboidCfg, MassPropertiesCfg, RigidBodyPropertiesCfg
+
+from isaaclab_tasks.rans import PushBlockCfg
 
 from .task_core import TaskCore
 

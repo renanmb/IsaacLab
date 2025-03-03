@@ -18,14 +18,16 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 # Configuration
 ##
 
+# Eric is usng a simpler Leatherback car
+# usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd",
+# usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
+# usd_path=f"{ISAACLAB_NUCLEUS_DIR}/source/assets/robots/leatherback_simple_better.usd",
+# /home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/
+
 LEATHERBACK_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        # Eric is usng a simpler Leatherback car
-        # usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd",
-        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
-        # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/source/assets/robots/leatherback_simple_better.usd",
-        usd_path="/home/goat/Documents/GitHub/renanmb/IsaacLab/leatherback_simple_better.usd,
-        rigid_props=sim_utils.RigidBodyPropertiesCfg(
+            usd_path=f"/home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/leatherback_simple_better.usd",
+            rigid_props=sim_utils.RigidBodyPropertiesCfg(
             rigid_body_enabled=True,
             max_linear_velocity=1000.0,
             max_angular_velocity=1000.0,
