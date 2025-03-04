@@ -12,9 +12,7 @@ from .ant import *
 from .anymal import *
 from .cart_double_pendulum import *
 from .cartpole import *
-from .custom_cartpole import *
 from .franka import *
-from .leatherback import *
 from .humanoid import *
 from .humanoid_28 import *
 from .kinova import *
@@ -25,5 +23,6 @@ from .shadow_hand import *
 from .spot import *
 from .unitree import *
 from .universal_robots import *
-from .floating_platform import *
-from .jetbot import *
+
+from .custom_cartpole import *
+from .leatherback import *
