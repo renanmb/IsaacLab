@@ -46,11 +46,11 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
         "Wheel__Knuckle__Front_Left",
         "Wheel__Knuckle__Front_Right",
         "Wheel__Upright__Rear_Right",
-        "Wheel__Upright__Rear_Light"
+        "Wheel__Upright__Rear_Left"
     ]
     steering_dof_name = [
-        "Knuckle__Upright_Front_Left",
-        "Knuckle__Upright_Front_Right"
+        "Knuckle__Upright__Front_Left",
+        "Knuckle__Upright__Front_Right"
     ]
 
     env_spacing = 10.0
@@ -70,6 +70,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         # self.joint_pos = self.leatherback.data.joint_pos
         # self.joint_vel = self.leatherback.data.joint_vel
+        # self._steering_action = torch.zeros((self.num_envs, 1), device=self.device, dtype=torch.float32)
 
         self._throttle_state =  torch.zeros((self.num_envs,4), device=self.device, dtype=torch.float32)
         self._steering_state =  torch.zeros((self.num_envs,2), device=self.device, dtype=torch.float32)
@@ -122,6 +123,18 @@ class LeatherbackEnv(DirectRLEnv):
         light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
         light_cfg.func("/World/Light", light_cfg)
 
+    # The process_actions is the inspiration for writting the _pre_physics_step
+    # def process_actions(self, actions: torch.Tensor):
+    #     self._previous_actions = self._actions.clone()
+    #     self._actions = actions.clone()
+    #     self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * self._robot_cfg.throttle_scale
+    #     self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * self._robot_cfg.steering_scale
+ 
+    #     # Log data
+    #     self.scalar_logger.log("robot_state", "AVG/throttle_action", self._throttle_action[:, 0])
+    #     self.scalar_logger.log("robot_state", "AVG/steering_action", self._steering_action[:, 0])
+    
+    # region _pre_physics_step
     # TODO
     # Need to configure the PRE Physics
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
@@ -137,10 +150,15 @@ class LeatherbackEnv(DirectRLEnv):
         self._throttle_state = self._throttle_action
 
         self._steering_action = actions[:, 0].repeat_interleave(4).reshape((-1, 2)) * steering_scale
-        self._steering_action += self._steering_state
+        # Error with tensor Sizes, self._steering_action(The size of tensor a (8192)) mus match self._steering_state the size of tensor b (4096)
+        # tensor_b_repeated = tensor_b.repeat(2, 1)  # Repeat tensor_b twice along the first dimension
+        # self._steering_state = self._steering_state.repeat(2,1)
+        self._steering_action += self._steering_state # RuntimeError: The size of tensor a (8192) must match the size of tensor b (4096) at non-singleton dimension 0
+        
         self._steering_action = torch.clamp(self._steering_action, -steering_max, steering_max)
         self._steering_state = self._steering_action
         # self.actions = self.action_scale * actions.clone()
+    # end region _pre_physics_step
 
     # TODO
     def _apply_action(self) -> None:
@@ -317,24 +335,24 @@ class LeatherbackEnv(DirectRLEnv):
         self._previous_heading_error = self._heading_error.clone()
         # end region
 
-# Do we need this ????
-@torch.jit.script
-def compute_rewards(
-    rew_scale_alive: float,
-    rew_scale_terminated: float,
-    rew_scale_pole_pos: float,
-    rew_scale_cart_vel: float,
-    rew_scale_pole_vel: float,
-    pole_pos: torch.Tensor,
-    pole_vel: torch.Tensor,
-    cart_pos: torch.Tensor,
-    cart_vel: torch.Tensor,
-    reset_terminated: torch.Tensor,
-):
-    rew_alive = rew_scale_alive * (1.0 - reset_terminated.float())
-    rew_termination = rew_scale_terminated * reset_terminated.float()
-    rew_pole_pos = rew_scale_pole_pos * torch.sum(torch.square(pole_pos).unsqueeze(dim=1), dim=-1)
-    rew_cart_vel = rew_scale_cart_vel * torch.sum(torch.abs(cart_vel).unsqueeze(dim=1), dim=-1)
-    rew_pole_vel = rew_scale_pole_vel * torch.sum(torch.abs(pole_vel).unsqueeze(dim=1), dim=-1)
-    total_reward = rew_alive + rew_termination + rew_pole_pos + rew_cart_vel + rew_pole_vel
-    return total_reward
+# # Do we need this ????
+# @torch.jit.script
+# def compute_rewards(
+#     rew_scale_alive: float,
+#     rew_scale_terminated: float,
+#     rew_scale_pole_pos: float,
+#     rew_scale_cart_vel: float,
+#     rew_scale_pole_vel: float,
+#     pole_pos: torch.Tensor,
+#     pole_vel: torch.Tensor,
+#     cart_pos: torch.Tensor,
+#     cart_vel: torch.Tensor,
+#     reset_terminated: torch.Tensor,
+# ):
+#     rew_alive = rew_scale_alive * (1.0 - reset_terminated.float())
+#     rew_termination = rew_scale_terminated * reset_terminated.float()
+#     rew_pole_pos = rew_scale_pole_pos * torch.sum(torch.square(pole_pos).unsqueeze(dim=1), dim=-1)
+#     rew_cart_vel = rew_scale_cart_vel * torch.sum(torch.abs(cart_vel).unsqueeze(dim=1), dim=-1)
+#     rew_pole_vel = rew_scale_pole_vel * torch.sum(torch.abs(pole_vel).unsqueeze(dim=1), dim=-1)
+#     total_reward = rew_alive + rew_termination + rew_pole_pos + rew_cart_vel + rew_pole_vel
+#     return total_reward

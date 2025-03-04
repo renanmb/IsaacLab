@@ -12,15 +12,6 @@ import gymnasium as gym
 from . import agents
 from .leatherback_env import *
 
-from .leatherback_go_through_poses import LeatherbackGoThroughPosesEnv, LeatherbackGoThroughPosesEnvCfg
-from .leatherback_go_through_positions import LeatherbackGoThroughPositionsEnv, LeatherbackGoThroughPositionsEnvCfg
-from .leatherback_go_to_pose import LeatherbackGoToPoseEnv, LeatherbackGoToPoseEnvCfg
-from .leatherback_go_to_position import LeatherbackGoToPositionEnv, LeatherbackGoToPositionEnvCfg
-from .leatherback_push_block import LeatherbackPushBlockEnv, LeatherbackPushBlockEnvCfg
-from .leatherback_race_waypoints import LeatherbackRaceWaypointsEnv, LeatherbackRaceWaypointsEnvCfg
-from .leatherback_race_wayposes import LeatherbackRaceWayposesEnv, LeatherbackRaceWayposesEnvCfg
-from .leatherback_track_velocities import LeatherbackTrackVelocitiesEnv, LeatherbackTrackVelocitiesEnvCfg
-
 ##
 # Register Gym environments.
 ##

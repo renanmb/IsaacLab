@@ -50,7 +50,7 @@ LEATHERBACK_CFG = ArticulationCfg(
             "Wheel__Knuckle__Front_Right": 0.0,
             "Wheel__Upright__Rear_Right": 0.0,
             "Wheel__Upright__Rear_Left": 0.0,
-            "Knuckle__Upright__Front_Reft": 0.0,
+            "Knuckle__Upright__Front_Right": 0.0,
             "Knuckle__Upright__Front_Left": 0.0,
         },
     ),
