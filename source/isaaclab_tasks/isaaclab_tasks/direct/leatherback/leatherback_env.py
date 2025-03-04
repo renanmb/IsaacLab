@@ -53,7 +53,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
         "Knuckle__Upright__Front_Right"
     ]
 
-    env_spacing = 10.0
+    env_spacing = 30.0
 
     # scene - 4096 environments
     scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=4096, env_spacing=env_spacing, replicate_physics=True)
@@ -70,6 +70,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         # self.joint_pos = self.leatherback.data.joint_pos
         # self.joint_vel = self.leatherback.data.joint_vel
+        # self._throttle_action = torch.zeros((self.num_envs, 1), device=self.device, dtype=torch.float32)
         # self._steering_action = torch.zeros((self.num_envs, 1), device=self.device, dtype=torch.float32)
 
         self._throttle_state =  torch.zeros((self.num_envs,4), device=self.device, dtype=torch.float32)
@@ -145,11 +146,11 @@ class LeatherbackEnv(DirectRLEnv):
         steering_max = 0.75
 
         self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
-        self._throttle_action += self._throttle_state
+        self._throttle_action += self._throttle_state # RuntimeError: The size of tensor a (2560) must match the size of tensor b (4096) at non-singleton dimension 0
         self.throttle_action = torch.clamp(self._throttle_action, -throttle_max, throttle_max * 0.1)
         self._throttle_state = self._throttle_action
-
-        self._steering_action = actions[:, 0].repeat_interleave(4).reshape((-1, 2)) * steering_scale
+        # The actions[:, 0] should be getting the values from the column 1
+        self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * steering_scale
         # Error with tensor Sizes, self._steering_action(The size of tensor a (8192)) mus match self._steering_state the size of tensor b (4096)
         # tensor_b_repeated = tensor_b.repeat(2, 1)  # Repeat tensor_b twice along the first dimension
         # self._steering_state = self._steering_state.repeat(2,1)
@@ -187,6 +188,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         return torch.stack([w, x, y, z], dim=1)
     
+    # region _get_observations
     def _get_observations(self) -> dict:
 
         # position error
@@ -208,9 +210,9 @@ class LeatherbackEnv(DirectRLEnv):
                 self._position_error.unsqueeze(dim=1),
                 torch.cos(self.target_heading_error).unsqueeze(dim=1),
                 torch.sin(self.target_heading_error).unsqueeze(dim=1),
-                self.leatherback.data.root_lin_vel_b[:, 0].unsqueeze(dim=1),
-                self.leatherback.data.root_lin_vel_b[:, 1].unsqueeze(dim=1),
-                self.leatherback.data.root_ang_vel_w[:, 2].unsqueeze(dim=1),
+                # self.leatherback.data.root_lin_vel_b[:, 0].unsqueeze(dim=1),
+                # self.leatherback.data.root_lin_vel_b[:, 1].unsqueeze(dim=1),
+                # self.leatherback.data.root_ang_vel_w[:, 2].unsqueeze(dim=1),
                 self._throttle_state[:, 0].unsqueeze(dim=1),
                 self._steering_state[:, 0].unsqueeze(dim=1),
             ),
@@ -223,6 +225,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         observations = {"policy": obs}
         return observations
+    # end of region _get_observations
 
     def _get_rewards(self) -> torch.Tensor:
 
