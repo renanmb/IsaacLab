@@ -30,11 +30,11 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     episode_length_s = 30.0 # Max each episode should last in seconds
     # action_scale = 100.0    # [N]
     action_space = 2        # Number of actions the neural network shuold return   
-    observation_space = 8   # Number of observations fed into neural network
+    observation_space = 5   # Number of observations fed into neural network
     state_space = 0         # Observations to be used in Actor Critic Training
 
     # simulation frames 120Hz
-    sim: SimulationCfg = SimulationCfg(dt=1 / 120, render_interval=decimation)
+    sim: SimulationCfg = SimulationCfg(dt=1 / 60, render_interval=decimation)
 
     # TODO
     # robot
@@ -53,7 +53,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
         "Knuckle__Upright__Front_Right"
     ]
 
-    env_spacing = 30.0
+    env_spacing = 32.0
 
     # scene - 4096 environments
     scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=4096, env_spacing=env_spacing, replicate_physics=True)
@@ -135,14 +135,22 @@ class LeatherbackEnv(DirectRLEnv):
     #     self.scalar_logger.log("robot_state", "AVG/throttle_action", self._throttle_action[:, 0])
     #     self.scalar_logger.log("robot_state", "AVG/steering_action", self._steering_action[:, 0])
     
+    # steering_scale = math.pi / 4.0
+    # """Multiplier for the steering position. The action is in the range [-1, 1]"""
+    # throttle_scale = 60.0
+    # """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
+
     # region _pre_physics_step
     # TODO
     # Need to configure the PRE Physics
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
-
+        """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
         throttle_scale = 1
+        # throttle_scale = 60.0
         throttle_max = 50.0
+        """Multiplier for the steering position. The action is in the range [-1, 1]"""
         steering_scale = 0.1
+        # steering_scale = math.pi / 4.0
         steering_max = 0.75
 
         self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
@@ -219,7 +227,6 @@ class LeatherbackEnv(DirectRLEnv):
             dim=-1,
         )
         
-        # from erics Leatehrback_v6
         if torch.any(obs.isnan()):
             raise ValueError("Observations cannot be NAN")
 
