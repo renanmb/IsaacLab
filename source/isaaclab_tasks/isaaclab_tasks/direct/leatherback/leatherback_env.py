@@ -26,8 +26,8 @@ from isaaclab.utils.math import sample_uniform
 @configclass
 class LeatherbackEnvCfg(DirectRLEnvCfg):
     # env
-    decimation = 2          # Decimation - number of time steps between actions
-    episode_length_s = 30.0 # Max each episode should last in seconds
+    decimation = 4          # Decimation - number of time steps between actions, it was 2
+    episode_length_s = 20.0 # Max each episode should last in seconds, 30 s seems a lot
     # action_scale = 100.0    # [N]
     action_space = 2        # Number of actions the neural network shuold return   
     observation_space = 5   # Number of observations fed into neural network
@@ -53,7 +53,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
         "Knuckle__Upright__Front_Right"
     ]
 
-    env_spacing = 32.0
+    env_spacing = 10.0 # depends on the ammount of Goals, 32 is a lot
 
     # scene - 4096 environments
     scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=4096, env_spacing=env_spacing, replicate_physics=True)
@@ -78,9 +78,9 @@ class LeatherbackEnv(DirectRLEnv):
 
         self._goal_reached =  torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
         self.task_completed =  torch.zeros((self.num_envs), device=self.device, dtype=torch.bool)
-
-        self._num_goals = 10
-
+        # region Number of Goals
+        self._num_goals = 3 # 10 seems too much
+        # end region Number of Goals
         self._target_positions =  torch.zeros((self.num_envs, self._num_goals, 2), device=self.device, dtype=torch.float32)
         self._markers_pos =  torch.zeros((self.num_envs, self._num_goals, 3), device=self.device, dtype=torch.float32)
 
@@ -145,7 +145,7 @@ class LeatherbackEnv(DirectRLEnv):
     # Need to configure the PRE Physics
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
         """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
-        throttle_scale = 1
+        throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
         # throttle_scale = 60.0
         throttle_max = 50.0
         """Multiplier for the steering position. The action is in the range [-1, 1]"""
@@ -261,6 +261,8 @@ class LeatherbackEnv(DirectRLEnv):
         # region debugging
         # Update Waypoints
         # this is about the CONES 
+        # marker0 to marker9 is RED
+        # marker 10 to marker19 is BLUE
         one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
         marker_indices = one_hot_encoded.view(-1).tolist()
         self.Waypoints.visualize(marker_indices=marker_indices)
@@ -286,10 +288,10 @@ class LeatherbackEnv(DirectRLEnv):
 
         # region Reset
         # reset from config
-        default_state = self.leatherback.data.default_root_state[env_ids]    # first there are pos, next 4 quats, next 3 vel,next 3 ang vel, 
-        leatherback_pose = default_state[:, :7]                              # proper way of getting default pose from config file
-        leatherback_velocities = default_state[:, 7:]                        # proper way of getting default velocities from config file
-        joint_positions = self.leatherback.data.default_joint_pos[env_ids]   # proper way to get joint positions from config file
+        default_state = self.leatherback.data.default_root_state[env_ids]   # first there are pos, next 4 quats, next 3 vel,next 3 ang vel, 
+        leatherback_pose = default_state[:, :7]                             # proper way of getting default pose from config file
+        leatherback_velocities = default_state[:, 7:]                       # proper way of getting default velocities from config file
+        joint_positions = self.leatherback.data.default_joint_pos[env_ids]  # proper way to get joint positions from config file
         joint_velocities = self.leatherback.data.default_joint_vel[env_ids] # proper way to get joint velocities from config file
 
         leatherback_pose[:, :3] += self.scene.env_origins[env_ids] # Adds center of each env position in leatherback position

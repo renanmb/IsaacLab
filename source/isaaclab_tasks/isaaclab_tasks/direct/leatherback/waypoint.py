@@ -25,6 +25,7 @@ CONE_CFG = VisualizationMarkersCfg(
 WAYPOINT_CFG = VisualizationMarkersCfg(
     prim_path="/World/Visuals/Cones",
     markers={
+        # region Red Markers
         "marker0": sim_utils.SphereCfg(
             radius=-0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
@@ -65,6 +66,8 @@ WAYPOINT_CFG = VisualizationMarkersCfg(
             radius=-0.01,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
         ),
+        # end of region Red Markers
+        # region Blue Markers
         "marker10": sim_utils.SphereCfg(
             radius=0.01,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
@@ -105,5 +108,6 @@ WAYPOINT_CFG = VisualizationMarkersCfg(
             radius=0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
         ),
+        # end of region Blue Markers
     }
 )
