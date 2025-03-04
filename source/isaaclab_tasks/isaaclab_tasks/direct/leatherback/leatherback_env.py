@@ -33,7 +33,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     observation_space = 5   # Number of observations fed into neural network
     state_space = 0         # Observations to be used in Actor Critic Training
 
-    # simulation frames 120Hz
+    # simulation frames Hz
     sim: SimulationCfg = SimulationCfg(dt=1 / 60, render_interval=decimation)
 
     # TODO

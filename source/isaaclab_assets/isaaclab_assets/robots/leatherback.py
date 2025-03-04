@@ -64,7 +64,7 @@ LEATHERBACK_CFG = ArticulationCfg(
             damping=100000.0, # very high dampening is required because it is a velocity controller
         ),
         "steering": ImplicitActuatorCfg(
-            joint_names_expr=["Knuckle__Upright__front.*"], 
+            joint_names_expr=["Knuckle__Upright__Front.*"], 
             effort_limit=40000.0, 
             velocity_limit=100.0, 
             stiffness=1000.0, # Very high stiffness is required because it is position cotroller
