@@ -266,13 +266,13 @@ class LeatherbackEnv(DirectRLEnv):
         #     goal_reached*self.goal_reached_bonus
         # )
 
-        # # region debugging
-        # # Update Waypoints
-        # # marker0 to marker9 is RED
-        # # marker 10 to marker19 is BLUE
-        # one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
-        # marker_indices = one_hot_encoded.view(-1).tolist()
-        # self.Waypoints.visualize(marker_indices=marker_indices)
+        # region debugging
+        # Update Waypoints
+        # marker0 to marker9 is RED
+        # marker 10 to marker19 is BLUE
+        one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals) # one_hot - all zeros except the target_index
+        marker_indices = one_hot_encoded.view(-1).tolist()
+        self.Waypoints.visualize(marker_indices=marker_indices)
 
         # if torch.any(composite_reward.isnan()):
         #     raise ValueError("Rewards cannot be NAN")

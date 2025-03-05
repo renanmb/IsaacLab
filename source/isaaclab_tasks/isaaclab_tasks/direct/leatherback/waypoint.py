@@ -5,15 +5,15 @@ from isaaclab.markers import VisualizationMarkersCfg, VisualizationMarkers
 # configuration
 ##
 
-CONE_CFG = VisualizationMarkersCfg(
+WAYPOINT_CFG = VisualizationMarkersCfg(
     prim_path="/World/Visuals/Cones",
     markers={
-        "marker1": sim_utils.SphereCfg(
+        "marker0": sim_utils.SphereCfg(
             radius=0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
         ),
         # this is wrong: VisualizationMarkersCfg.SphereCfg ---- VisualizationMarkersCfg has no attribute 'SphereCfg'
-        "marker2": sim_utils.SphereCfg(
+        "marker1": sim_utils.SphereCfg(
             radius=0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),
         ),
@@ -22,7 +22,7 @@ CONE_CFG = VisualizationMarkersCfg(
 """Configuration for a simple traffic cone marker"""
 # Change REW_CFG to WAYPOINT_CFG
 
-WAYPOINT_CFG = VisualizationMarkersCfg(
+CONE_CFG = VisualizationMarkersCfg(
     prim_path="/World/Visuals/Cones",
     markers={
         # region Red Markers
