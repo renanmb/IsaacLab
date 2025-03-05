@@ -30,7 +30,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     episode_length_s = 20.0 # Max each episode should last in seconds, 30 s seems a lot
     # action_scale = 100.0    # [N]
     action_space = 2        # Number of actions the neural network shuold return   
-    observation_space = 5   # Number of observations fed into neural network
+    observation_space = 8   # Number of observations fed into neural network
     state_space = 0         # Observations to be used in Actor Critic Training
 
     # simulation frames Hz
@@ -49,11 +49,11 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
         "Wheel__Upright__Rear_Left"
     ]
     steering_dof_name = [
+        "Knuckle__Upright__Front_Right",
         "Knuckle__Upright__Front_Left",
-        "Knuckle__Upright__Front_Right"
     ]
 
-    env_spacing = 10.0 # depends on the ammount of Goals, 32 is a lot
+    env_spacing = 32.0 # depends on the ammount of Goals, 32 is a lot
 
     # scene - 4096 environments
     scene: InteractiveSceneCfg = InteractiveSceneCfg(num_envs=4096, env_spacing=env_spacing, replicate_physics=True)
@@ -79,7 +79,7 @@ class LeatherbackEnv(DirectRLEnv):
         self._goal_reached =  torch.zeros((self.num_envs), device=self.device, dtype=torch.int32)
         self.task_completed =  torch.zeros((self.num_envs), device=self.device, dtype=torch.bool)
         # region Number of Goals
-        self._num_goals = 3 # 10 seems too much
+        self._num_goals = 10 # 10 seems too much
         # end region Number of Goals
         self._target_positions =  torch.zeros((self.num_envs, self._num_goals, 2), device=self.device, dtype=torch.float32)
         self._markers_pos =  torch.zeros((self.num_envs, self._num_goals, 3), device=self.device, dtype=torch.float32)
@@ -89,7 +89,10 @@ class LeatherbackEnv(DirectRLEnv):
         self.course_width_coefficient = 2.0
 
         # reward parameters
-        self.position_tolerance: float = 0.2
+        # Tolerance
+        # position_tolerance: float = 0.15, started at 0.2
+        """Tolerance for the position of the robot. Defaults to 1cm."""
+        self.position_tolerance: float = 0.15
         self.goal_reached_bonus: float = 10.0
         self.position_progress_weight: float = 1.0
         self.heading_coefficient = 0.25
@@ -203,7 +206,7 @@ class LeatherbackEnv(DirectRLEnv):
         current_target_positions = self._target_positions[self.leatherback._ALL_INDICES, self._target_index]
         self._position_error_vector = current_target_positions - self.leatherback.data.root_pos_w[:, :2]
         self._previous_position_error = self._position_error.clone()
-        self._position_error = torch.norm(self._position_error_vector, dim=1)
+        self._position_error = torch.norm(self._position_error_vector, dim=-1) # had placed dim=1
 
         # heading error
         heading = self.leatherback.data.heading_w
@@ -218,9 +221,9 @@ class LeatherbackEnv(DirectRLEnv):
                 self._position_error.unsqueeze(dim=1),
                 torch.cos(self.target_heading_error).unsqueeze(dim=1),
                 torch.sin(self.target_heading_error).unsqueeze(dim=1),
-                # self.leatherback.data.root_lin_vel_b[:, 0].unsqueeze(dim=1),
-                # self.leatherback.data.root_lin_vel_b[:, 1].unsqueeze(dim=1),
-                # self.leatherback.data.root_ang_vel_w[:, 2].unsqueeze(dim=1),
+                self.leatherback.data.root_lin_vel_b[:, 0].unsqueeze(dim=1),
+                self.leatherback.data.root_lin_vel_b[:, 1].unsqueeze(dim=1),
+                self.leatherback.data.root_ang_vel_w[:, 2].unsqueeze(dim=1),
                 self._throttle_state[:, 0].unsqueeze(dim=1),
                 self._steering_state[:, 0].unsqueeze(dim=1),
             ),
@@ -233,14 +236,14 @@ class LeatherbackEnv(DirectRLEnv):
         observations = {"policy": obs}
         return observations
     # end of region _get_observations
-
+    # region _get_rewards
     def _get_rewards(self) -> torch.Tensor:
 
         # position progress
         position_progress_rew = self._previous_position_error - self._position_error
 
-        # Heading Distance
-        target_heading_rew = torch.exp(torch.abs(self.target_heading_error) / self.heading_coefficient)
+        # Heading Distance - changing the numerator to positive make it drive backwards
+        target_heading_rew = torch.exp(-torch.abs(self.target_heading_error) / self.heading_coefficient)
 
         # Checks if the goal is reached
         goal_reached = self._position_error < self.position_tolerance
@@ -271,7 +274,7 @@ class LeatherbackEnv(DirectRLEnv):
             raise ValueError("Rewards cannot be NAN")
 
         return composite_reward
-
+    # end of region _get_rewards
     def _get_dones(self) -> tuple[torch.Tensor, torch.Tensor]:
         
         task_failed = self.episode_length_buf > self.max_episode_length
