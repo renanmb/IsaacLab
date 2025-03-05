@@ -12,7 +12,7 @@ CONE_CFG = VisualizationMarkersCfg(
             radius=0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0)),
         ),
-        # this is wrong VisualizationMarkersCfg as no attribute 'SphereCfg'
+        # this is wrong: VisualizationMarkersCfg.SphereCfg ---- VisualizationMarkersCfg has no attribute 'SphereCfg'
         "marker2": sim_utils.SphereCfg(
             radius=0.1,
             visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0)),

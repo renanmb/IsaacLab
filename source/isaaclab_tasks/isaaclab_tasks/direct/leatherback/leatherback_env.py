@@ -138,11 +138,6 @@ class LeatherbackEnv(DirectRLEnv):
     #     self.scalar_logger.log("robot_state", "AVG/throttle_action", self._throttle_action[:, 0])
     #     self.scalar_logger.log("robot_state", "AVG/steering_action", self._steering_action[:, 0])
     
-    # steering_scale = math.pi / 4.0
-    # """Multiplier for the steering position. The action is in the range [-1, 1]"""
-    # throttle_scale = 60.0
-    # """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
-
     # region _pre_physics_step
     # TODO
     # Need to configure the PRE Physics
@@ -157,16 +152,12 @@ class LeatherbackEnv(DirectRLEnv):
         steering_max = 0.75
 
         self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
-        self._throttle_action += self._throttle_state # RuntimeError: The size of tensor a (2560) must match the size of tensor b (4096) at non-singleton dimension 0
+        self._throttle_action += self._throttle_state 
         self.throttle_action = torch.clamp(self._throttle_action, -throttle_max, throttle_max * 0.1)
         self._throttle_state = self._throttle_action
-        # The actions[:, 0] should be getting the values from the column 1
-        self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * steering_scale
-        # Error with tensor Sizes, self._steering_action(The size of tensor a (8192)) mus match self._steering_state the size of tensor b (4096)
-        # tensor_b_repeated = tensor_b.repeat(2, 1)  # Repeat tensor_b twice along the first dimension
-        # self._steering_state = self._steering_state.repeat(2,1)
-        self._steering_action += self._steering_state # RuntimeError: The size of tensor a (8192) must match the size of tensor b (4096) at non-singleton dimension 0
         
+        self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * steering_scale
+        self._steering_action += self._steering_state
         self._steering_action = torch.clamp(self._steering_action, -steering_max, steering_max)
         self._steering_state = self._steering_action
         # self.actions = self.action_scale * actions.clone()
@@ -174,7 +165,6 @@ class LeatherbackEnv(DirectRLEnv):
 
     # TODO
     def _apply_action(self) -> None:
-        # it is missing the _throttle_action
         self.leatherback.set_joint_velocity_target(self._throttle_action, joint_ids=self._throttle_dof_idx)
         self.leatherback.set_joint_position_target(self._steering_state, joint_ids=self._steering_dof_idx)
 
@@ -263,7 +253,6 @@ class LeatherbackEnv(DirectRLEnv):
 
         # region debugging
         # Update Waypoints
-        # this is about the CONES 
         # marker0 to marker9 is RED
         # marker 10 to marker19 is BLUE
         one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
@@ -314,6 +303,12 @@ class LeatherbackEnv(DirectRLEnv):
         self.leatherback.write_root_velocity_to_sim(leatherback_velocities, env_ids)
         self.leatherback.write_joint_state_to_sim(joint_positions, joint_velocities, None, env_ids)
         # end region reset robot
+        
+        # region Reset Actions
+        # It trains without this
+        # self._throttle_state[env_ids] = 0.0
+        # self._throttle_action[env_ids] = 0.0 # AttributeError: 'LeatherbackEnv' object has no attribute '_throttle_action'
+        # end region Reset Actions
 
         # region reset goals
         self._target_positions[env_ids, :, :] = 0.0
@@ -333,7 +328,7 @@ class LeatherbackEnv(DirectRLEnv):
         self.Waypoints.visualize(translations=visualize_pos)
         # end Region Reset Goals
 
-        # Region make sure the position error and position dist are up to date after the reset
+        # region make sure the position error and position dist are up to date after the reset
         # reset positions error
         current_target_positions = self._target_positions[self.leatherback._ALL_INDICES, self._target_index]
         self._position_error_vector = current_target_positions[:, :2] - self.leatherback.data.root_pos_w[:, :2]

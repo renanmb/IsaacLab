@@ -18,7 +18,7 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 # Configuration
 ##
 
-# Eric is usng a simpler Leatherback car
+# Eric is using a simpler Leatherback car
 # usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd",
 # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
 # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/source/assets/robots/leatherback_simple_better.usd",
