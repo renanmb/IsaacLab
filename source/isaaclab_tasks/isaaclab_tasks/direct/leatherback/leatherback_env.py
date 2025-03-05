@@ -228,39 +228,54 @@ class LeatherbackEnv(DirectRLEnv):
     # end of region _get_observations
     # region _get_rewards
     def _get_rewards(self) -> torch.Tensor:
-
-        # position progress
-        position_progress_rew = self._previous_position_error - self._position_error
-
-        # Heading Distance - changing the numerator to positive make it drive backwards
-        target_heading_rew = torch.exp(-torch.abs(self.target_heading_error) / self.heading_coefficient)
-
-        # Checks if the goal is reached
-        goal_reached = self._position_error < self.position_tolerance
-
-        # if the goal is reached, the target index is updated
-        self._target_index = self._target_index + goal_reached
-
-        self.task_completed = self._target_index > (self._num_goals -1)
-
-        self._target_index = self._target_index % self._num_goals
-
-        composite_reward = (
-            position_progress_rew*self.position_progress_weight +
-            target_heading_rew*self.heading_progress_weight +
-            goal_reached*self.goal_reached_bonus
+        # Trying to Implement TorchScript
+        composite_reward, self.task_completed, self._target_index = compute_rewards(
+            self.heading_coefficient,
+            self.position_tolerance,
+            self._num_goals,
+            self.position_progress_weight,
+            self.heading_progress_weight,
+            self.goal_reached_bonus,
+            self._previous_position_error,
+            self._position_error,
+            self.target_heading_error,
+            self.task_completed,
+            self._target_index,
         )
+        # Trying to Implement TorchScript
 
-        # region debugging
-        # Update Waypoints
-        # marker0 to marker9 is RED
-        # marker 10 to marker19 is BLUE
-        one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
-        marker_indices = one_hot_encoded.view(-1).tolist()
-        self.Waypoints.visualize(marker_indices=marker_indices)
+        # # position progress
+        # position_progress_rew = self._previous_position_error - self._position_error
 
-        if torch.any(composite_reward.isnan()):
-            raise ValueError("Rewards cannot be NAN")
+        # # Heading Distance - changing the numerator to positive make it drive backwards
+        # target_heading_rew = torch.exp(-torch.abs(self.target_heading_error) / self.heading_coefficient)
+
+        # # Checks if the goal is reached
+        # goal_reached = self._position_error < self.position_tolerance
+
+        # # if the goal is reached, the target index is updated
+        # self._target_index = self._target_index + goal_reached
+
+        # self.task_completed = self._target_index > (self._num_goals -1)
+
+        # self._target_index = self._target_index % self._num_goals
+
+        # composite_reward = (
+        #     position_progress_rew*self.position_progress_weight +
+        #     target_heading_rew*self.heading_progress_weight +
+        #     goal_reached*self.goal_reached_bonus
+        # )
+
+        # # region debugging
+        # # Update Waypoints
+        # # marker0 to marker9 is RED
+        # # marker 10 to marker19 is BLUE
+        # one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals)
+        # marker_indices = one_hot_encoded.view(-1).tolist()
+        # self.Waypoints.visualize(marker_indices=marker_indices)
+
+        # if torch.any(composite_reward.isnan()):
+        #     raise ValueError("Rewards cannot be NAN")
 
         return composite_reward
     # end of region _get_rewards
@@ -366,3 +381,52 @@ class LeatherbackEnv(DirectRLEnv):
 #     rew_pole_vel = rew_scale_pole_vel * torch.sum(torch.abs(pole_vel).unsqueeze(dim=1), dim=-1)
 #     total_reward = rew_alive + rew_termination + rew_pole_pos + rew_cart_vel + rew_pole_vel
 #     return total_reward
+
+
+# _previous_position_error - from observations
+# _position_error - from observations
+# target_heading_error - from observations
+# heading_coefficient - reward parameters
+# position_tolerance - reward parameters
+# _target_index
+# task_completed
+# _num_goals - reward parameters
+# position_progress_weight - reward parameters
+# heading_progress_weight - reward parameters
+# goal_reached_bonus - reward parameters
+
+@torch.jit.script
+def compute_rewards(
+    heading_coefficient: float,
+    position_tolerance: float,
+    _num_goals: int,
+    position_progress_weight: float,
+    heading_progress_weight: float,
+    goal_reached_bonus: float,
+    _previous_position_error: torch.Tensor,
+    _position_error: torch.Tensor,
+    target_heading_error: torch.Tensor,
+    task_completed: torch.Tensor,
+    _target_index: torch.Tensor,
+):
+    # position progress
+    position_progress_rew = _previous_position_error - _position_error
+    # Heading Distance - changing the numerator to positive make it drive backwards
+    target_heading_rew = torch.exp(-torch.abs(target_heading_error) / heading_coefficient)
+    # Checks if the goal is reached
+    goal_reached = _position_error < position_tolerance
+    # if the goal is reached, the target index is updated
+    _target_index = _target_index + goal_reached
+    task_completed = _target_index > (_num_goals -1)
+    _target_index = _target_index % _num_goals
+
+    composite_reward = (
+        position_progress_rew*position_progress_weight +
+        target_heading_rew*heading_progress_weight +
+        goal_reached*goal_reached_bonus
+    )
+
+    if torch.any(composite_reward.isnan()):
+        raise ValueError("Rewards cannot be NAN")
+
+    return composite_reward, task_completed, _target_index
