@@ -53,7 +53,7 @@ from isaaclab.assets import (
 from isaaclab.scene import InteractiveScene, InteractiveSceneCfg
 from isaaclab.sim import SimulationContext
 from isaaclab.utils import Timer, configclass
-from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
+from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR, NVIDIA_NUCLEUS_DIR
 
 ##
 # Pre-defined Configuration
@@ -102,35 +102,49 @@ class MultiObjectSceneCfg(InteractiveSceneCfg):
     dome_light = AssetBaseCfg(
         prim_path="/World/Light", spawn=sim_utils.DomeLightCfg(intensity=3000.0, color=(0.75, 0.75, 0.75))
     )
-
     # rigid object
     object: RigidObjectCfg = RigidObjectCfg(
         prim_path="/World/envs/env_.*/Object",
-        spawn=sim_utils.MultiAssetSpawnerCfg(
-            assets_cfg=[
-                sim_utils.ConeCfg(
-                    radius=0.3,
-                    height=0.6,
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.CuboidCfg(
-                    size=(0.3, 0.3, 0.3),
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
-                ),
-                sim_utils.SphereCfg(
-                    radius=0.3,
-                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
-                ),
-            ],
-            random_choice=True,
+        spawn=sim_utils.UsdFileCfg(
+            usd_path=f"{NVIDIA_NUCLEUS_DIR}/Assets/DigitalTwin/Assets/Warehouse/Safety/Cones/Traffic/TrafficCone_A02_30cm_PR_V_NVD_01.usd",
             rigid_props=sim_utils.RigidBodyPropertiesCfg(
-                solver_position_iteration_count=4, solver_velocity_iteration_count=0
-            ),
-            mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
-            collision_props=sim_utils.CollisionPropertiesCfg(),
+                rigid_body_enabled=True,
+                max_linear_velocity=1000.0,
+                max_angular_velocity=1000.0,
+                max_depenetration_velocity=100.0,
+                enable_gyroscopic_forces=True,
+            )
         ),
-        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 2.0)),
+        init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 1.0)),
     )
+    # # rigid object
+    # object: RigidObjectCfg = RigidObjectCfg(
+    #     prim_path="/World/envs/env_.*/Object",
+    #     spawn=sim_utils.MultiAssetSpawnerCfg(
+    #         assets_cfg=[
+    #             sim_utils.ConeCfg(
+    #                 radius=0.3,
+    #                 height=0.6,
+    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 1.0, 0.0), metallic=0.2),
+    #             ),
+    #             sim_utils.CuboidCfg(
+    #                 size=(0.3, 0.3, 0.3),
+    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+    #             ),
+    #             sim_utils.SphereCfg(
+    #                 radius=0.3,
+    #                 visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(0.0, 0.0, 1.0), metallic=0.2),
+    #             ),
+    #         ],
+    #         random_choice=True,
+    #         rigid_props=sim_utils.RigidBodyPropertiesCfg(
+    #             solver_position_iteration_count=4, solver_velocity_iteration_count=0
+    #         ),
+    #         mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+    #         collision_props=sim_utils.CollisionPropertiesCfg(),
+    #     ),
+    #     init_state=RigidObjectCfg.InitialStateCfg(pos=(0.0, 0.0, 2.0)),
+    # )
 
     # object collection
     object_collection: RigidObjectCollectionCfg = RigidObjectCollectionCfg(
@@ -285,11 +299,11 @@ def main():
     with Timer("[INFO] Time to create scene: "):
         scene = InteractiveScene(scene_cfg)
 
-    with Timer("[INFO] Time to randomize scene: "):
-        # DO YOUR OWN OTHER KIND OF RANDOMIZATION HERE!
-        # Note: Just need to acquire the right attribute about the property you want to set
-        # Here is an example on setting color randomly
-        randomize_shape_color(scene_cfg.object.prim_path)
+    # with Timer("[INFO] Time to randomize scene: "):
+    #     # DO YOUR OWN OTHER KIND OF RANDOMIZATION HERE!
+    #     # Note: Just need to acquire the right attribute about the property you want to set
+    #     # Here is an example on setting color randomly
+    #     randomize_shape_color(scene_cfg.object.prim_path)
 
     # Play the simulator
     sim.reset()

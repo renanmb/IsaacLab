@@ -34,7 +34,7 @@ simulation_app = app_launcher.app
 import isaacsim.core.utils.prims as prim_utils
 
 import isaaclab.sim as sim_utils
-from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
+from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR, NVIDIA_NUCLEUS_DIR
 
 
 def design_scene():
@@ -83,10 +83,16 @@ def design_scene():
     )
     cfg_cuboid_deformable.func("/World/Objects/CuboidDeformable", cfg_cuboid_deformable, translation=(0.15, 0.0, 2.0))
 
-    # spawn a usd file of a table into the scene
-    cfg = sim_utils.UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd")
-    cfg.func("/World/Objects/Table", cfg, translation=(0.0, 0.0, 1.05))
+    # # spawn a usd file of a table into the scene
+    # cfg = sim_utils.UsdFileCfg(usd_path=f"{ISAAC_NUCLEUS_DIR}/Props/Mounts/SeattleLabTable/table_instanceable.usd")
+    # cfg.func("/World/Objects/Table", cfg, translation=(0.0, 0.0, 1.05))
 
+    # spawn a usd file of a Traffic Cone
+    # /home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/
+    cfg = sim_utils.UsdFileCfg(usd_path=f"{NVIDIA_NUCLEUS_DIR}/Assets/DigitalTwin/Assets/Warehouse/Safety/Cones/Traffic/TrafficCone_A02_30cm_PR_V_NVD_01.usd",scale=(0.006,0.006,0.006))
+    # cfg = sim_utils.UsdFileCfg(usd_path=f"/home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/TrafficCone_A02_30cm_PR_V_NVD_01.usd",scale=(0.006,0.006,0.006))
+    cfg.func("/World/Objects/Traffic_Cone", cfg, translation=(0.0, 0.0, 1.05))
+    # print(f"{NVIDIA_NUCLEUS_DIR}/Assets/DigitalTwin/Assets/Warehouse/Safety/Cones/Traffic/TrafficCone_A02_30cm_PR_V_NVD_01.usd")
 
 def main():
     """Main function."""
