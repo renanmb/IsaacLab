@@ -11,11 +11,11 @@ from collections.abc import Sequence
 
 from isaaclab_assets.robots.leatherback import LEATHERBACK_CFG
 from .waypoint import WAYPOINT_CFG
-from .cone import CONE_CFG
+from .cone import CONES_CFG # , CONE_CFG 
 from isaaclab.markers import VisualizationMarkersCfg, VisualizationMarkers
 
 import isaaclab.sim as sim_utils
-from isaaclab.assets import Articulation, ArticulationCfg, RigidObject, RigidObjectCfg
+from isaaclab.assets import Articulation, ArticulationCfg, RigidObjectCollection, RigidObjectCollectionCfg # , RigidObject, RigidObjectCfg
 from isaaclab.envs import DirectRLEnv, DirectRLEnvCfg
 from isaaclab.scene import InteractiveSceneCfg
 from isaaclab.sim import SimulationCfg
@@ -43,13 +43,14 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     # Waypoints
     waypoint_cfg: VisualizationMarkersCfg = WAYPOINT_CFG
     # Spawning Traffic Cones
-    cone_cfg: RigidObjectCfg = CONE_CFG.replace(prim_path="/World/envs/env_.*/Cone")
+    # cone_cfg: RigidObjectCfg = CONE_CFG.replace(prim_path="/World/envs/env_.*/Cone")
+    cone_collection_cfg: RigidObjectCollectionCfg = CONES_CFG  # Ensure naming consistency
     
-    cone_cfgs = []
-    for i in range(num_goals):
-        _cone_cfg: RigidObjectCfg = CONE_CFG.copy()
-        _cone_cfg.prim_path = f"/World/envs/env_.*/cone{i}"
-        cone_cfgs.append(_cone_cfg)
+    # cone_cfgs = []
+    # for i in range(num_goals):
+    #     _cone_cfg: RigidObjectCfg = CONE_CFG.copy()
+    #     _cone_cfg.prim_path = f"/World/envs/env_.*/cone{i}"
+    #     cone_cfgs.append(_cone_cfg)
 
     throttle_dof_name = [
         "Wheel__Knuckle__Front_Left",
@@ -70,6 +71,7 @@ class LeatherbackEnv(DirectRLEnv):
 
     def __init__(self, cfg: LeatherbackEnvCfg, render_mode: str | None = None, **kwargs):
         super().__init__(cfg, render_mode, **kwargs)
+
         self._num_goals = self.cfg.num_goals
         self.env_spacing = self.cfg.env_spacing
         self.course_length_coefficient = self.cfg.course_length_coefficient
@@ -100,14 +102,16 @@ class LeatherbackEnv(DirectRLEnv):
     def _setup_scene(self):
         self.leatherback = Articulation(self.cfg.robot_cfg)
         self.Waypoints = VisualizationMarkers(self.cfg.waypoint_cfg)
-        self.Cones = RigidObject(self.cfg.cone_cfg)
-        # self.Cones2 = self.cfg.cone_cfgs
+        self.cones = RigidObjectCollection(self.cfg.cone_collection_cfg) # AttributeError: 'RigidObjectCollection' object has no attribute '_data'. Did you mean: 'data'?
+        self.object_state = []
+        # self.Cones = RigidObject(self.cfg.cone_cfg)
+        # # self.Cones2 = self.cfg.cone_cfgs
 
-        self.Cones2 = []
-        for _cone_cfg in self.cfg.cone_cfgs:
-            cones: RigidObject = RigidObject(_cone_cfg)
-            self.Cones2.append(cones)
-        # print(self.Cones2)
+        # self.Cones2 = []
+        # for _cone_cfg in self.cfg.cone_cfgs:
+        #     cones: RigidObject = RigidObject(_cone_cfg)
+        #     self.Cones2.append(cones)
+        # # print(self.Cones2)
         # add ground plane
         spawn_ground_plane(prim_path="/World/ground", cfg=GroundPlaneCfg())
 
@@ -117,6 +121,8 @@ class LeatherbackEnv(DirectRLEnv):
 
         # add articulation to scene
         self.scene.articulations["Leatherback"] = self.leatherback
+        # Add as a collection
+        self.scene.rigid_object_collections["cones"] = self.cones # A dictionary of rigid object collections in the scene.
 
         # add lights
         light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
@@ -137,11 +143,9 @@ class LeatherbackEnv(DirectRLEnv):
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
         """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
         throttle_scale = 1 # when set to 2 it trains but the cars are flying, 3 you get NaNs
-        # throttle_scale = 60.0
-        throttle_max = 50.0
+        throttle_max = 50.0 # throttle_max = 60.0
         """Multiplier for the steering position. The action is in the range [-1, 1]"""
-        steering_scale = 0.1
-        # steering_scale = math.pi / 4.0
+        steering_scale = 0.1 # steering_scale = math.pi / 4.0
         steering_max = 0.75
 
         self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
@@ -192,7 +196,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         # region Cones
         # cone positions
-        current_cone_positions = self.cone_positions[self.leatherback._ALL_INDICES, self._target_index]
+        # current_cone_positions = self.cone_positions[self.leatherback._ALL_INDICES, self._target_index]
 
         # heading error
         heading = self.leatherback.data.heading_w
@@ -338,25 +342,51 @@ class LeatherbackEnv(DirectRLEnv):
         # end Region Reset Goals
 
         # region Cones
+        num_objects = len(CONES_CFG.rigid_objects)
+        self.object_state = self.cones.data.default_object_state.clone() # 	Default object state [pos, quat, lin_vel, ang_vel] in local environment frame.
+        object_ids = torch.arange(num_objects, device=self.device)  # Each object has a unique index
+        # torch.arange(num_objects, device=self.device) - creates a one-dimensional tensor containing a sequence of integers from 0 up to (but not including) num_objects
+        
         # Reset Cones
         offset = 0.5
-        self.cone_positions = self._target_positions[env_ids]
+        self.cone_positions1 = self._target_positions[env_ids]
+        self.cone_positions2 = self._target_positions[env_ids]
         offset = torch.full((num_reset, self._num_goals), device=self.device, fill_value=offset, dtype=torch.float32)
         sign_pattern = torch.tensor([1 if j% 2 == 0 else -1 for j in range(self._num_goals)], device=self.device)
         offset[:, :] *= sign_pattern
-        self.cone_positions[:, :, 1] += offset
+        # self.cone_positions = torch.cat([self.cone_positions[:len(self.cone_positions)//2, :len(self.cone_positions)//2, 1] + offset, self.cone_positions[len(self.cone_positions)//2:, len(self.cone_positions)//2:, 1] - offset], dim=1)
+        self.cone_positions1[:, :, 1] += offset # Tensor size self._num_goals
+        self.cone_positions2[:, :, 1] -= offset # Tensor size self._num_goals
+        self.cone_positions = torch.cat([self.cone_positions1 ,self.cone_positions2 ], dim=1)
 
-        index: int = 0
-        for cones in self.Cones2:
-            cone_default_state = cones.data.default_root_state[env_ids]
-            cone_pose = cone_default_state[:, :7]
-            cone_pose[:]
-            cone_pose[:, 2] = 0.05
-            cone_pose[:, :2] = self.cone_positions[:, index, :]
-            index += 1
-            cones.write_root_pose_to_sim(cone_pose, env_ids)
-            cone_velocities = cone_default_state[:, 7:]
-            cones.write_root_velocity_to_sim(cone_velocities, env_ids)
+        # The idea is to add the self.cone_positions to the self.object_state with the correct Cone position for each Cone in the ENV
+        # Pad the tensor to have 3 dimensions by adding a column of zeros for the third dimension (z)
+        padded_cone_positions = torch.cat((self.cone_positions, torch.zeros(self.cone_positions.shape[0], self.cone_positions.shape[1], 1, device=self.cone_positions.device)), dim=2)
+        self.object_state[env_ids, :, :3] = padded_cone_positions
+
+        # Offset cone positions per environment by the environment origins. All Cones spawn in the same position
+        """ use = since it's to individual env,  += will cause shift to other locations??"""
+        # self.object_state[env_ids, :, :3] = self.scene.env_origins[env_ids].unsqueeze(1).expand(num_reset, num_objects, 3)
+        # self.object_state[env_ids, :, :3] refers to the first 3 components 
+        # unsqueeze(1) - adds a new dimension at index 1.
+        # The .expand() method is used to repeat the tensor across specified dimensions. It doesn't copy the data but creates a new view with repeated data.
+        # In this case, it expands the tensor from the shape [N, 1, 3] (after the unsqueeze) to [num_reset, num_objects, 3].
+
+        print(f"env_ids before function call: {env_ids}, type: {type(env_ids)}, device: {env_ids.device if isinstance(env_ids, torch.Tensor) else 'CPU'}")
+        self.cones.write_object_link_pose_to_sim(self.object_state[env_ids, :, :7], env_ids, object_ids) # Set the object pose over selected environment and object indices into the simulation.
+
+        # index: int = 0
+        # for cones in self.Cones2:
+        #     cone_default_state = cones.data.default_root_state[env_ids] # Default root state [pos, quat, lin_vel, ang_vel] in the local environment frame.
+        #     cone_pose = cone_default_state[:, :7]
+        #     cone_pose[:]
+        #     cone_pose[:, 2] = 0.05
+        #     cone_pose[:, :2] = self.cone_positions[:, index, :]
+        #     index += 1
+        #     cones.write_root_pose_to_sim(cone_pose, env_ids)
+        #     cone_velocities = cone_default_state[:, 7:]
+        #     cones.write_root_velocity_to_sim(cone_velocities, env_ids)
+        
         # # From genozen repo
         # cone_num = 1
         # # ori_x = track_points_outer[0][0]
