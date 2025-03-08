@@ -43,8 +43,15 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     # Waypoints
     waypoint_cfg: VisualizationMarkersCfg = WAYPOINT_CFG
     # Spawning Traffic Cones
+    # cone_cfg: RigidObjectCfg = CONE_CFG.replace(prim_path="/World/envs/env_.*/Cone")
     cone_collection_cfg: RigidObjectCollectionCfg = CONES_CFG  # Ensure naming consistency
     
+    # cone_cfgs = []
+    # for i in range(num_goals):
+    #     _cone_cfg: RigidObjectCfg = CONE_CFG.copy()
+    #     _cone_cfg.prim_path = f"/World/envs/env_.*/cone{i}"
+    #     cone_cfgs.append(_cone_cfg)
+
     throttle_dof_name = [
         "Wheel__Knuckle__Front_Left",
         "Wheel__Knuckle__Front_Right",
@@ -97,7 +104,15 @@ class LeatherbackEnv(DirectRLEnv):
         self.Waypoints = VisualizationMarkers(self.cfg.waypoint_cfg)
         self.cones = RigidObjectCollection(self.cfg.cone_collection_cfg) # AttributeError: 'RigidObjectCollection' object has no attribute '_data'. Did you mean: 'data'?
         self.object_state = []
+        # self.Cones = RigidObject(self.cfg.cone_cfg)
+        # # self.Cones2 = self.cfg.cone_cfgs
 
+        # self.Cones2 = []
+        # for _cone_cfg in self.cfg.cone_cfgs:
+        #     cones: RigidObject = RigidObject(_cone_cfg)
+        #     self.Cones2.append(cones)
+        # # print(self.Cones2)
+        # add ground plane
         spawn_ground_plane(prim_path="/World/ground", cfg=GroundPlaneCfg())
 
         # clone, filter and replicate
@@ -113,6 +128,17 @@ class LeatherbackEnv(DirectRLEnv):
         light_cfg = sim_utils.DomeLightCfg(intensity=2000.0, color=(0.75, 0.75, 0.75))
         light_cfg.func("/World/Light", light_cfg)
 
+    # The process_actions is the inspiration for writting the _pre_physics_step
+    # def process_actions(self, actions: torch.Tensor):
+    #     self._previous_actions = self._actions.clone()
+    #     self._actions = actions.clone()
+    #     self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * self._robot_cfg.throttle_scale
+    #     self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * self._robot_cfg.steering_scale
+ 
+    #     # Log data
+    #     self.scalar_logger.log("robot_state", "AVG/throttle_action", self._throttle_action[:, 0])
+    #     self.scalar_logger.log("robot_state", "AVG/steering_action", self._steering_action[:, 0])
+    
     # region _pre_physics_step
     def _pre_physics_step(self, actions: torch.Tensor) -> None:
         """Multiplier for the throttle velocity. The action is in the range [-1, 1] and the radius of the wheel is 0.06m"""
@@ -131,9 +157,6 @@ class LeatherbackEnv(DirectRLEnv):
         self._steering_action += self._steering_state
         self._steering_action = torch.clamp(self._steering_action, -steering_max, steering_max)
         self._steering_state = self._steering_action
-    #     # Log data
-    #     self.scalar_logger.log("robot_state", "AVG/throttle_action", self._throttle_action[:, 0])
-    #     self.scalar_logger.log("robot_state", "AVG/steering_action", self._steering_action[:, 0])
     # end region _pre_physics_step
 
     # TODO
@@ -222,12 +245,40 @@ class LeatherbackEnv(DirectRLEnv):
             self.task_completed,
             self._target_index,
         )
+        # Trying to Implement TorchScript
+
+        # # position progress
+        # position_progress_rew = self._previous_position_error - self._position_error
+
+        # # Heading Distance - changing the numerator to positive make it drive backwards
+        # target_heading_rew = torch.exp(-torch.abs(self.target_heading_error) / self.heading_coefficient)
+
+        # # Checks if the goal is reached
+        # goal_reached = self._position_error < self.position_tolerance
+
+        # # if the goal is reached, the target index is updated
+        # self._target_index = self._target_index + goal_reached
+
+        # self.task_completed = self._target_index > (self._num_goals -1)
+
+        # self._target_index = self._target_index % self._num_goals
+
+        # composite_reward = (
+        #     position_progress_rew*self.position_progress_weight +
+        #     target_heading_rew*self.heading_progress_weight +
+        #     goal_reached*self.goal_reached_bonus
+        # )
 
         # region debugging
-        # Update Waypoints so the goal reached waypoint turns blue - marker0 is RED - marker1 is BLUE
+        # Update Waypoints so the goal reached waypoint turns blue
+        # marker0 is RED
+        # marker1 is BLUE
         one_hot_encoded = torch.nn.functional.one_hot(self._target_index.long(), num_classes=self._num_goals) # one_hot - all zeros except the target_index
         marker_indices = one_hot_encoded.view(-1).tolist()
         self.Waypoints.visualize(marker_indices=marker_indices)
+
+        # if torch.any(composite_reward.isnan()):
+        #     raise ValueError("Rewards cannot be NAN")
 
         return composite_reward
     # end of region _get_rewards
@@ -294,6 +345,7 @@ class LeatherbackEnv(DirectRLEnv):
         num_objects = len(CONES_CFG.rigid_objects)
         self.object_state = self.cones.data.default_object_state.clone() # 	Default object state [pos, quat, lin_vel, ang_vel] in local environment frame.
         object_ids = torch.arange(num_objects, device=self.device)  # Each object has a unique index
+        # torch.arange(num_objects, device=self.device) - creates a one-dimensional tensor containing a sequence of integers from 0 up to (but not including) num_objects
         
         # Reset Cones
         offset = 0.5
@@ -302,6 +354,7 @@ class LeatherbackEnv(DirectRLEnv):
         offset = torch.full((num_reset, self._num_goals), device=self.device, fill_value=offset, dtype=torch.float32)
         sign_pattern = torch.tensor([1 if j% 2 == 0 else -1 for j in range(self._num_goals)], device=self.device)
         offset[:, :] *= sign_pattern
+        # self.cone_positions = torch.cat([self.cone_positions[:len(self.cone_positions)//2, :len(self.cone_positions)//2, 1] + offset, self.cone_positions[len(self.cone_positions)//2:, len(self.cone_positions)//2:, 1] - offset], dim=1)
         self.cone_positions1[:, :, 1] += offset # Tensor size self._num_goals
         self.cone_positions2[:, :, 1] -= offset # Tensor size self._num_goals
         self.cone_positions = torch.cat([self.cone_positions1 ,self.cone_positions2 ], dim=1)
@@ -310,9 +363,39 @@ class LeatherbackEnv(DirectRLEnv):
         # Pad the tensor to have 3 dimensions by adding a column of zeros for the third dimension (z)
         padded_cone_positions = torch.cat((self.cone_positions, torch.zeros(self.cone_positions.shape[0], self.cone_positions.shape[1], 1, device=self.cone_positions.device)), dim=2)
         self.object_state[env_ids, :, :3] = padded_cone_positions
+
+        # Offset cone positions per environment by the environment origins. All Cones spawn in the same position
+        """ use = since it's to individual env,  += will cause shift to other locations??"""
+        # self.object_state[env_ids, :, :3] = self.scene.env_origins[env_ids].unsqueeze(1).expand(num_reset, num_objects, 3)
+        # self.object_state[env_ids, :, :3] refers to the first 3 components 
+        # unsqueeze(1) - adds a new dimension at index 1.
+        # The .expand() method is used to repeat the tensor across specified dimensions. It doesn't copy the data but creates a new view with repeated data.
+        # In this case, it expands the tensor from the shape [N, 1, 3] (after the unsqueeze) to [num_reset, num_objects, 3].
+
         print(f"env_ids before function call: {env_ids}, type: {type(env_ids)}, device: {env_ids.device if isinstance(env_ids, torch.Tensor) else 'CPU'}")
         self.cones.write_object_link_pose_to_sim(self.object_state[env_ids, :, :7], env_ids, object_ids) # Set the object pose over selected environment and object indices into the simulation.
 
+        # index: int = 0
+        # for cones in self.Cones2:
+        #     cone_default_state = cones.data.default_root_state[env_ids] # Default root state [pos, quat, lin_vel, ang_vel] in the local environment frame.
+        #     cone_pose = cone_default_state[:, :7]
+        #     cone_pose[:]
+        #     cone_pose[:, 2] = 0.05
+        #     cone_pose[:, :2] = self.cone_positions[:, index, :]
+        #     index += 1
+        #     cones.write_root_pose_to_sim(cone_pose, env_ids)
+        #     cone_velocities = cone_default_state[:, 7:]
+        #     cones.write_root_velocity_to_sim(cone_velocities, env_ids)
+        
+        # # From genozen repo
+        # cone_num = 1
+        # # ori_x = track_points_outer[0][0]
+        # # ori_y = track_points_outer[0][1]
+        # # scale = 0.3
+        # for i in track_points_outer:
+        #     cfg_cone.func(f"/World/Objects/Cone{cone_num}_B", cfg_cone, translation=((i[0] - ori_x)*scale, (i[1] - ori_y)*scale, 0.0))
+        #     cone_num+=1
+        # # End of From genozen repo
         # region position error and position dist
         # make sure the position error and position dist are up to date after the reset
         # reset positions error
