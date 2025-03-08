@@ -296,7 +296,7 @@ class LeatherbackEnv(DirectRLEnv):
         object_ids = torch.arange(num_objects, device=self.device)  # Each object has a unique index
         
         # Reset Cones
-        offset = 0.5
+        offset = 0.75
         self.cone_positions1 = self._target_positions[env_ids]
         self.cone_positions2 = self._target_positions[env_ids]
         offset = torch.full((num_reset, self._num_goals), device=self.device, fill_value=offset, dtype=torch.float32)

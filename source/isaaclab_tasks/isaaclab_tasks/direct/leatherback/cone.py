@@ -59,7 +59,7 @@ CONES_CFG = RigidObjectCollectionCfg(
                 # usd_path = f"{NVIDIA_NUCLEUS_DIR}/Assets/DigitalTwin/Assets/Warehouse/Safety/Cones/Traffic/TrafficCone_A02_30cm_PR_V_NVD_01.usd",
                 usd_path=f"/home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/Cones/TrafficCone_A02_30cm_PR_V_NVD_01.usd",
                 scale = (0.008,0.008,0.008), # make sure the assets have the proper scale
-                mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+                # mass_props=sim_utils.MassPropertiesCfg(mass=1.0), # Adding mass is causing issues
                 collision_props=sim_utils.CollisionPropertiesCfg(),
                 rigid_props = sim_utils.RigidBodyPropertiesCfg(
                     rigid_body_enabled=True,
