@@ -124,7 +124,7 @@ class LeatherbackEnv(DirectRLEnv):
 
         self._throttle_action = actions[:, 0].repeat_interleave(4).reshape((-1, 4)) * throttle_scale
         self._throttle_action += self._throttle_state 
-        self.throttle_action = torch.clamp(self._throttle_action, -throttle_max, throttle_max * 0.1)
+        self.throttle_action = torch.clamp(self._throttle_action, -throttle_max, throttle_max * 0.1) # negative goes forward and positive goes backward
         self._throttle_state = self._throttle_action
         
         self._steering_action = actions[:, 1].repeat_interleave(2).reshape((-1, 2)) * steering_scale
