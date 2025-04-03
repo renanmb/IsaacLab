@@ -11,7 +11,7 @@ from collections.abc import Sequence
 
 from isaaclab_assets.robots.leatherback import LEATHERBACK_CFG
 from .waypoint import WAYPOINT_CFG
-from .cone import CONES_CFG # , CONE_CFG 
+from .cone import CONES_CFG , CONES_CFG2 # , CONE_CFG 
 from isaaclab.markers import VisualizationMarkersCfg, VisualizationMarkers
 
 import isaaclab.sim as sim_utils
@@ -43,7 +43,7 @@ class LeatherbackEnvCfg(DirectRLEnvCfg):
     # Waypoints
     waypoint_cfg: VisualizationMarkersCfg = WAYPOINT_CFG
     # Spawning Traffic Cones
-    cone_collection_cfg: RigidObjectCollectionCfg = CONES_CFG  # Ensure naming consistency
+    cone_collection_cfg: RigidObjectCollectionCfg = CONES_CFG2  # Ensure naming consistency
     
     throttle_dof_name = [
         "Wheel__Knuckle__Front_Left",

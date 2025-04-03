@@ -75,6 +75,29 @@ CONES_CFG = RigidObjectCollectionCfg(
     }
 )
 
+# The traffic Cones are Spawning of Scale for some reason
+# usd_path=f"/home/goat/Documents/GitHub/renanmb/IsaacLab/source/assets/robots/Cones/TrafficCone_A02_30cm_PR_V_NVD_01.usd"
+"""Configuration for a collection of 10 traffic cones with unique paths"""
+CONES_CFG2 = RigidObjectCollectionCfg(
+    rigid_objects={
+        f"Cone_{i}": RigidObjectCfg(
+            prim_path = f"/World/envs/env_.*/Cone_{i}",
+            spawn = sim_utils.ConeCfg(
+                    radius=0.1,
+                    height=0.3,
+                    visual_material=sim_utils.PreviewSurfaceCfg(diffuse_color=(1.0, 0.0, 0.0), metallic=0.2),
+                    rigid_props=sim_utils.RigidBodyPropertiesCfg(
+                        solver_position_iteration_count=4, solver_velocity_iteration_count=0
+                    ),
+                    mass_props=sim_utils.MassPropertiesCfg(mass=1.0),
+                    collision_props=sim_utils.CollisionPropertiesCfg(),
+                ),
+                init_state=RigidObjectCfg.InitialStateCfg(pos=(0.5, 0.0, 2.0)),  # Default position
+        )
+        for i in range(20)  # Create 10 cones at different positions
+    }
+)
+
 """Configuration for a collection of 10 red cones with unique paths"""
 CONE_COLLECTION_CFG = RigidObjectCollectionCfg(
     rigid_objects={
