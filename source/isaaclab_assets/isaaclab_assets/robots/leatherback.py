@@ -18,7 +18,7 @@ from isaaclab.utils.assets import ISAACLAB_NUCLEUS_DIR
 # Configuration
 ##
 
-# Eric is using a simpler Leatherback car
+# Simpler Leatherback car has a simpler suspension with less joints to avoid physics problems.
 # usd_path=f"{REPO_ROOT_PATH}/source/assets/robots/leatherback_simple_better.usd",
 # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/Robots/Leatherback/leatherback.usd",
 # usd_path=f"{ISAACLAB_NUCLEUS_DIR}/source/assets/robots/leatherback_simple_better.usd",
