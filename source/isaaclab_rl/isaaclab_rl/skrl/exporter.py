@@ -8,7 +8,7 @@ import os
 import torch
 
 
-def export_policy_as_jit(policy: object, normalizer: object | None, path: str, filename="policy.pt"):
+def export_policy_as_jit(is_recurrent: bool, policy: object, normalizer: object | None, path: str, filename="policy.pt"):
     """Export policy into a Torch JIT file.
 
     Args:
@@ -17,12 +17,12 @@ def export_policy_as_jit(policy: object, normalizer: object | None, path: str, f
         path: The path to the saving directory.
         filename: The name of exported JIT file. Defaults to "policy.pt".
     """
-    policy_exporter = _TorchPolicyExporter(policy, normalizer)
+    policy_exporter = _TorchPolicyExporter(is_recurrent, policy, normalizer)
     policy_exporter.export(path, filename)
 
 
 def export_policy_as_onnx(
-    policy: object, path: str, normalizer: object | None = None, filename="policy.onnx", verbose=False
+    is_recurrent: bool, policy: object, path: str, normalizer: object | None = None, filename="policy.onnx", verbose=False
 ):
     """Export policy into a Torch ONNX file.
 
@@ -35,7 +35,7 @@ def export_policy_as_onnx(
     """
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
-    policy_exporter = _OnnxPolicyExporter(policy, normalizer, verbose)
+    policy_exporter = _OnnxPolicyExporter(is_recurrent, policy, normalizer, verbose)
     policy_exporter.export(path, filename)
 
 
@@ -47,9 +47,9 @@ Helper Classes - Private.
 class _TorchPolicyExporter(torch.nn.Module):
     """Exporter of actor-critic into JIT file."""
 
-    def __init__(self, policy, normalizer=None):
+    def __init__(self, is_recurrent, policy, normalizer=None):
         super().__init__()
-        self.is_recurrent = policy.is_recurrent
+        self.is_recurrent = is_recurrent
         # copy policy parameters
         if hasattr(policy, "actor"):
             self.actor = copy.deepcopy(policy.actor)
@@ -104,21 +104,24 @@ class _TorchPolicyExporter(torch.nn.Module):
 class _OnnxPolicyExporter(torch.nn.Module):
     """Exporter of actor-critic into ONNX file."""
 
-    def __init__(self, policy, normalizer=None, verbose=False):
+    def __init__(self, is_recurrent, policy, normalizer=None, verbose=False):
         super().__init__()
         self.verbose = verbose
-        self.is_recurrent = policy.is_recurrent
+        self.is_recurrent = is_recurrent
         # copy policy parameters
-        if hasattr(policy, "actor"):
-            self.actor = copy.deepcopy(policy.actor)
-            if self.is_recurrent:
-                self.rnn = copy.deepcopy(policy.memory_a.rnn)
-        elif hasattr(policy, "student"):
-            self.actor = copy.deepcopy(policy.student)
-            if self.is_recurrent:
-                self.rnn = copy.deepcopy(policy.memory_s.rnn)
-        else:
-            raise ValueError("Policy does not have an actor/student module.")
+        self.actor = copy.deepcopy(policy)
+        self._nn = copy.deepcopy(policy)
+        self.model = MyModel(self._nn)
+        # if hasattr(policy, "actor"):
+        #     self.actor = copy.deepcopy(policy.actor)
+        #     if self.is_recurrent:
+        #         self.rnn = copy.deepcopy(policy.memory_a.rnn)
+        # elif hasattr(policy, "student"):
+        #     self.actor = copy.deepcopy(policy.student)
+        #     if self.is_recurrent:
+        #         self.rnn = copy.deepcopy(policy.memory_s.rnn)
+        # else:
+        #     raise ValueError("Policy does not have an actor/student module.")
         # set up recurrent network
         if self.is_recurrent:
             self.rnn.cpu()
@@ -147,7 +150,7 @@ class _OnnxPolicyExporter(torch.nn.Module):
             actions, h_out, c_out = self(obs, h_in, c_in)
             torch.onnx.export(
                 self,
-                (obs, h_in, c_in),
+                (obs, h_in, c_in), # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
                 opset_version=11,
@@ -157,16 +160,49 @@ class _OnnxPolicyExporter(torch.nn.Module):
                 dynamic_axes={},
             )
         else:
-            print(f"printing self {self}")
-            obs = torch.zeros(1, self.actor[0].in_features)
+            # print(f"printing the self: {self}")
+            # print(f"Zeros from the net container:{self.actor.net_container[0].in_features}")
+            obs = torch.zeros(1, self.actor.net_container[0].in_features)
+            # print(obs)
             torch.onnx.export(
-                self,
-                obs,
+                self.model, # self -- this should be wrong
+                obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
                 opset_version=11,
                 verbose=self.verbose,
                 input_names=["obs"],
-                output_names=["actions"],
+                output_names=["actions"], # "taken_actions"
                 dynamic_axes={},
             )
+
+"""
+printing the self: _OnnxPolicyExporter(
+  (actor): SharedModel(
+    (net_container): Sequential(
+      (0): Linear(in_features=4, out_features=32, bias=True)
+      (1): ELU(alpha=1.0)
+      (2): Linear(in_features=32, out_features=32, bias=True)
+      (3): ELU(alpha=1.0)
+    )
+    (policy_layer): Linear(in_features=32, out_features=1, bias=True)
+    (value_layer): Linear(in_features=32, out_features=1, bias=True)
+  )
+  (normalizer): Identity()
+)
+"""
+
+class MyModel(torch.nn.Module):
+    def __init__(self, policy):
+        super(MyModel, self).__init__()
+        # Define the sequential part
+        self.sequential = policy.net_container 
+        # Define the linear part
+        self.linear = policy.policy_layer
+
+    def forward(self, x):
+        # Process the input through the sequential model
+        x = self.sequential(x)
+        # Apply the linear model to the output of the sequential model
+        x = self.linear(x)
+        return x

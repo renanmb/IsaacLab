@@ -1,6 +1,6 @@
 seed: 42
 
-
+empirical_normalization: False
 # Models are instantiated using skrl's model instantiator utility
 # https://skrl.readthedocs.io/en/latest/api/utils/model_instantiators.html
 models:
