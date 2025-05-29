@@ -91,6 +91,7 @@ from isaaclab_rl.skrl import SkrlVecEnvWrapper, export_policy_as_jit, export_pol
 import isaaclab_tasks  # noqa: F401
 from isaaclab_tasks.utils import get_checkpoint_path, load_cfg_from_registry, parse_env_cfg
 
+from skrl.envs.wrappers.torch import MultiAgentEnvWrapper, Wrapper
 # PLACEHOLDER: Extension template (do not remove this comment)
 
 # config shortcuts
@@ -172,24 +173,27 @@ def main():
     
     # TODO amazing thigns go here
     # region ONNX stuff
-    # Testing the Getter attribute model from the Class Runner
     # extract the neural network module
-    # policy_nn = runner.model
     policy_nn = runner.agent.policy
     # print(f"[INFO] Print model DICT: {policy_nn}")
-
-    # Testing the is_recurrent
     is_recurrent = runner.agent._rnn
     # print(is_recurrent)
-    # export policy to onnx/jit
-    export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
-    export_policy_as_onnx(
-        is_recurrent,
-        policy_nn, 
-        normalizer=runner.obs_normalizer, 
-        path=export_model_dir, 
-        filename="policy.onnx"
-    )
+    multi_agent = isinstance(env, MultiAgentEnvWrapper)
+    possible_agents = env.possible_agents if multi_agent else ["agent"]
+    for agent_id in possible_agents:
+        if hasattr(runner.obs_normalizer, "policy"):
+            normalizer = runner.obs_normalizer[agent_id]["policy"]
+        else:
+            normalizer = runner.obs_normalizer[agent_id]
+        # export policy to onnx/jit
+        export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
+        export_policy_as_onnx(
+            is_recurrent,
+            policy_nn, 
+            normalizer=runner.obs_normalizer, 
+            path=export_model_dir, 
+            filename=f"policy_{agent_id}.onnx"
+        )
 
     # end of region
 
