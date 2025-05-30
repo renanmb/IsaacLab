@@ -111,7 +111,9 @@ class _OnnxPolicyExporter(torch.nn.Module):
         # copy policy parameters
         self.actor = copy.deepcopy(policy)
         self._nn = copy.deepcopy(policy)
+        # Need to import the template model torch hook
         self.model = MyModel(self._nn)
+        
         # if hasattr(policy, "actor"):
         #     self.actor = copy.deepcopy(policy.actor)
         #     if self.is_recurrent:
@@ -192,6 +194,9 @@ printing the self: _OnnxPolicyExporter(
 )
 """
 
+"""
+This need to be in the template inside the SKRL
+"""
 class MyModel(torch.nn.Module):
     def __init__(self, policy):
         super(MyModel, self).__init__()
