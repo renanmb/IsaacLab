@@ -173,12 +173,14 @@ def main():
     
     # TODO amazing thigns go here
     # region ONNX stuff
-    # extract the neural network module
-    policy_nn = runner.agent.policy
-    # print(f"[INFO] Print model DICT: {policy_nn}")
+    
     is_recurrent = runner.agent._rnn
     # print(is_recurrent)
     multi_agent = isinstance(env, MultiAgentEnvWrapper)
+
+    # extract the neural network module
+    policy_nn = runner.agent.policies if multi_agent else runner.agent.policy
+    print(f"[INFO] Print model DICT: {policy_nn}")
     possible_agents = env.possible_agents if multi_agent else ["agent"]
     for agent_id in possible_agents:
         if hasattr(runner.obs_normalizer, "policy"):
