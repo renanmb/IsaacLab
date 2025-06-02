@@ -174,6 +174,10 @@ def main():
     # TODO amazing thigns go here
     # region ONNX stuff
     
+    # This seems unnecessary
+    model = runner.model
+    print(f"[INFO] Print model grom runner.model {model}")
+
     is_recurrent = runner.agent._rnn
     # print(is_recurrent)
     multi_agent = isinstance(env, MultiAgentEnvWrapper)
@@ -181,6 +185,10 @@ def main():
     # extract the neural network module
     policy_nn = runner.agent.policies if multi_agent else runner.agent.policy
     print(f"[INFO] Print model DICT: {policy_nn}")
+    # Trying to get the FORWARD out of the instantiator
+    forward_nn = runner.agent.policies.forward if multi_agent else runner.agent.policy.forward
+    print(f"[INFO] Print model forward DICT: {forward_nn}")
+    # experiment
     possible_agents = env.possible_agents if multi_agent else ["agent"]
     for agent_id in possible_agents:
         if hasattr(runner.obs_normalizer, "policy"):

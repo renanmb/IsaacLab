@@ -109,10 +109,10 @@ class _OnnxPolicyExporter(torch.nn.Module):
         self.verbose = verbose
         self.is_recurrent = is_recurrent
         # copy policy parameters
-        self.actor = copy.deepcopy(policy)
+        # self.actor = copy.deepcopy(policy)
         self._nn = copy.deepcopy(policy)
         # Need to import the template model torch hook
-        self.model = MyModel(self._nn)
+        # self.model = MyModel(self._nn)
         
         # if hasattr(policy, "actor"):
         #     self.actor = copy.deepcopy(policy.actor)
@@ -162,12 +162,12 @@ class _OnnxPolicyExporter(torch.nn.Module):
                 dynamic_axes={},
             )
         else:
-            # print(f"printing the self: {self}")
-            # print(f"Zeros from the net container:{self.actor.net_container[0].in_features}")
-            obs = torch.zeros(1, self.actor.net_container[0].in_features)
+            print(f"printing the self: {self}")
+            print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
+            obs = torch.zeros(1, self._nn.net_container[0].in_features)
             # print(obs)
             torch.onnx.export(
-                self.model, # self -- this should be wrong
+                self._nn.forward, # self -- this should be wrong -- self.model
                 obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
