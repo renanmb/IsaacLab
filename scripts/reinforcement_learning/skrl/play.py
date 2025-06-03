@@ -175,8 +175,8 @@ def main():
     # region ONNX stuff
     
     # This seems unnecessary
-    model = runner.model
-    print(f"[INFO] Print model grom runner.model {model}")
+    model = runner.source
+    print(f"[INFO] Print model grom runner._source {model}")
 
     is_recurrent = runner.agent._rnn
     # print(is_recurrent)
@@ -199,7 +199,7 @@ def main():
         export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
         export_policy_as_onnx(
             is_recurrent,
-            policy_nn, 
+            model, # policy_nn
             normalizer=runner.obs_normalizer, 
             path=export_model_dir, 
             filename=f"policy_{agent_id}.onnx"

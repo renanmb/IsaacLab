@@ -162,12 +162,12 @@ class _OnnxPolicyExporter(torch.nn.Module):
                 dynamic_axes={},
             )
         else:
-            print(f"printing the self: {self}")
-            print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
-            obs = torch.zeros(1, self._nn.net_container[0].in_features)
+            print(f"printing the self._nn: {self._nn}")
+            # print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
+            obs = torch.zeros(1, 4) # self._nn.net_container[0].in_features
             # print(obs)
             torch.onnx.export(
-                self._nn.forward, # self -- this should be wrong -- self.model
+                self._nn.forward(self._nn), # self -- this should be wrong -- self.model
                 obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
