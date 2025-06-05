@@ -111,9 +111,19 @@ class _OnnxPolicyExporter(torch.nn.Module):
         # copy policy parameters
         # self.actor = copy.deepcopy(policy)
         self._nn = copy.deepcopy(policy)
+
+        # Experiment using the --- for name, module in self._nn._modules.items(): --- inside the instantiator
+        # output = self._nn(torch.zeros(1, self._nn.net_container[0].in_features))
+        # print(output)
+    
         # Need to import the template model torch hook
-        # self.model = MyModel(self._nn)
+        self.model = MyModel(self._nn)
+        # self.model = self.get_all_layers(self._nn)
+        for name, module in self._nn._modules.items():
+            print(f"Submodule name: {name}, Submodule: {module}")  
         
+        # self.visualisation = {}
+
         # if hasattr(policy, "actor"):
         #     self.actor = copy.deepcopy(policy.actor)
         #     if self.is_recurrent:
@@ -143,6 +153,20 @@ class _OnnxPolicyExporter(torch.nn.Module):
     def forward(self, x):
         return self.actor(self.normalizer(x))
 
+    # # visualisation = {}
+    # def hook_fn(m, i, o):
+    #     self.visualisation[m] = o 
+
+    # def get_all_layers(net):
+    #     for name, layer in net._modules.items():
+    #         #If it is a sequential, don't register a hook on it
+    #         # but recursively register hook on all it's module children
+    #         if isinstance(layer, nn.Sequential):
+    #             get_all_layers(layer)
+    #         else:
+    #             # it's a non sequential. Register a hook
+    #             layer.register_forward_hook(hook_fn)
+
     def export(self, path, filename):
         self.to("cpu")
         if self.is_recurrent:
@@ -163,11 +187,13 @@ class _OnnxPolicyExporter(torch.nn.Module):
             )
         else:
             print(f"printing the self._nn: {self._nn}")
+            print(f"printing the self.model: {self.model}")
             # print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
-            obs = torch.zeros(1, 4) # self._nn.net_container[0].in_features
+            # obs = torch.zeros(1, 4) # self._nn.net_container[0].in_features
+            obs = torch.zeros(1, self._nn.net_container[0].in_features)
             # print(obs)
             torch.onnx.export(
-                self._nn.forward(self._nn), # self -- this should be wrong -- self.model
+                self.model, # self -- this should be wrong -- self.model -- fail self._nn.forward(self._nn)
                 obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
@@ -206,8 +232,10 @@ class MyModel(torch.nn.Module):
         self.linear = policy.policy_layer
 
     def forward(self, x):
+        for name, module in self._modules.items():
+            x = module(x)
         # Process the input through the sequential model
-        x = self.sequential(x)
+        # x = self.sequential(x)
         # Apply the linear model to the output of the sequential model
-        x = self.linear(x)
+        # x = self.linear(x)
         return x

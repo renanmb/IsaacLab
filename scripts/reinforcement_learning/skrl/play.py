@@ -175,8 +175,8 @@ def main():
     # region ONNX stuff
     
     # This seems unnecessary
-    model = runner.source
-    print(f"[INFO] Print model grom runner._source {model}")
+    # model = runner.source
+    # print(f"[INFO] Print model grom runner._source {model}")
 
     is_recurrent = runner.agent._rnn
     # print(is_recurrent)
@@ -185,9 +185,11 @@ def main():
     # extract the neural network module
     policy_nn = runner.agent.policies if multi_agent else runner.agent.policy
     print(f"[INFO] Print model DICT: {policy_nn}")
+   
     # Trying to get the FORWARD out of the instantiator
-    forward_nn = runner.agent.policies.forward if multi_agent else runner.agent.policy.forward
-    print(f"[INFO] Print model forward DICT: {forward_nn}")
+    # forward_nn = runner.agent.policies.forward if multi_agent else runner.agent.policy.forward
+    # print(f"[INFO] Print model forward DICT: {forward_nn}")
+   
     # experiment
     possible_agents = env.possible_agents if multi_agent else ["agent"]
     for agent_id in possible_agents:
@@ -199,7 +201,7 @@ def main():
         export_model_dir = os.path.join(os.path.dirname(resume_path), "exported")
         export_policy_as_onnx(
             is_recurrent,
-            model, # policy_nn
+            policy_nn, # policy_nn
             normalizer=runner.obs_normalizer, 
             path=export_model_dir, 
             filename=f"policy_{agent_id}.onnx"
