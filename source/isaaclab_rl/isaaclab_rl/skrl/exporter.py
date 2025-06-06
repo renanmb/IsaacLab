@@ -109,18 +109,12 @@ class _OnnxPolicyExporter(torch.nn.Module):
         self.verbose = verbose
         self.is_recurrent = is_recurrent
         # copy policy parameters
-        # self.actor = copy.deepcopy(policy)
         self._nn = copy.deepcopy(policy)
 
-        # Experiment using the --- for name, module in self._nn._modules.items(): --- inside the instantiator
-        # output = self._nn(torch.zeros(1, self._nn.net_container[0].in_features))
-        # print(output)
-    
         # Need to import the template model torch hook
         self.model = MyModel(self._nn)
-        # self.model = self.get_all_layers(self._nn)
-        for name, module in self._nn._modules.items():
-            print(f"Submodule name: {name}, Submodule: {module}")  
+        # for name, module in self._nn._modules.items():
+        #     print(f"Submodule name: {name}, Submodule: {module}")  
         
         # self.visualisation = {}
 
@@ -226,16 +220,17 @@ This need to be in the template inside the SKRL
 class MyModel(torch.nn.Module):
     def __init__(self, policy):
         super(MyModel, self).__init__()
-        # Define the sequential part
-        self.sequential = policy.net_container 
-        # Define the linear part
-        self.linear = policy.policy_layer
+        self.policy = policy
+        # # Define the sequential part
+        # self.sequential = policy.net_container 
+        # # Define the linear part
+        # self.linear = policy.policy_layer
 
     def forward(self, x):
-        for name, module in self._modules.items():
-            x = module(x)
-        # Process the input through the sequential model
-        # x = self.sequential(x)
-        # Apply the linear model to the output of the sequential model
-        # x = self.linear(x)
+        for name, module in self.policy._modules.items():
+            print(f"Submodule name: {name}, Submodule: {module}") 
+            if name == "value_layer":
+                continue
+            else:
+                x = module(x)
         return x
