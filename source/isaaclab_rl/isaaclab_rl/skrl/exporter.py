@@ -180,6 +180,7 @@ class _OnnxPolicyExporter(torch.nn.Module):
                 dynamic_axes={},
             )
         else:
+            print(f"printing self {self}")
             print(f"printing the self._nn: {self._nn}")
             print(f"printing the self.model: {self.model}")
             # print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
