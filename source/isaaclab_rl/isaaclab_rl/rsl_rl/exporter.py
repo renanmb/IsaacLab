@@ -35,6 +35,7 @@ def export_policy_as_onnx(
     """
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
+    print(f"printing the policy in export_policy_as_onnx: f{policy}")
     policy_exporter = _OnnxPolicyExporter(policy, normalizer, verbose)
     policy_exporter.export(path, filename)
 

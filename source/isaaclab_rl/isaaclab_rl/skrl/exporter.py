@@ -35,6 +35,9 @@ def export_policy_as_onnx(
     """
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
+    # test = MyModel(policy)
+    # print(f" My awesome test: {test}")
+    # print(f"is_recurrent: {is_recurrent}")
     policy_exporter = _OnnxPolicyExporter(is_recurrent, policy, normalizer, verbose)
     policy_exporter.export(path, filename)
 
@@ -108,35 +111,19 @@ class _OnnxPolicyExporter(torch.nn.Module):
         super().__init__()
         self.verbose = verbose
         self.is_recurrent = is_recurrent
-        # copy policy parameters
-        self._nn = copy.deepcopy(policy)
+        # Combine net_container and policy_layer into one Sequential module
+        modules = list(policy.net_container.children())  # unpack all layers
+        modules.append(policy.policy_layer)              # add final policy layer
 
-        # Need to import the template model torch hook
-        self.model = MyModel(self._nn)
-        # for name, module in self._nn._modules.items():
-        #     print(f"Submodule name: {name}, Submodule: {module}")  
-        
-        # self.visualisation = {}
-
-        # if hasattr(policy, "actor"):
-        #     self.actor = copy.deepcopy(policy.actor)
-        #     if self.is_recurrent:
-        #         self.rnn = copy.deepcopy(policy.memory_a.rnn)
-        # elif hasattr(policy, "student"):
-        #     self.actor = copy.deepcopy(policy.student)
-        #     if self.is_recurrent:
-        #         self.rnn = copy.deepcopy(policy.memory_s.rnn)
-        # else:
-        #     raise ValueError("Policy does not have an actor/student module.")
-        # set up recurrent network
-        if self.is_recurrent:
-            self.rnn.cpu()
-            self.forward = self.forward_lstm
+        self.actor = torch.nn.Sequential(*modules)
         # copy normalizer if exists
-        if normalizer:
-            self.normalizer = copy.deepcopy(normalizer)
-        else:
-            self.normalizer = torch.nn.Identity()
+        self.normalizer = copy.deepcopy(normalizer) if isinstance(normalizer, torch.nn.Module) else torch.nn.Identity()
+
+        # # set up recurrent network
+        # if self.is_recurrent:
+        #     self.rnn = copy.deepcopy(policy.memory_a.rnn)
+        #     self.rnn.cpu()
+        #     self.forward = self.forward_lstm
 
     def forward_lstm(self, x_in, h_in, c_in):
         x_in = self.normalizer(x_in)
@@ -162,7 +149,9 @@ class _OnnxPolicyExporter(torch.nn.Module):
     #             layer.register_forward_hook(hook_fn)
 
     def export(self, path, filename):
-        self.to("cpu")
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        # device = torch.device("cpu")  # or "cuda" if you want export from GPU
+        self.to(device)
         if self.is_recurrent:
             obs = torch.zeros(1, self.rnn.input_size)
             h_in = torch.zeros(self.rnn.num_layers, 1, self.rnn.hidden_size)
@@ -181,14 +170,9 @@ class _OnnxPolicyExporter(torch.nn.Module):
             )
         else:
             print(f"printing self {self}")
-            print(f"printing the self._nn: {self._nn}")
-            print(f"printing the self.model: {self.model}")
-            # print(f"Zeros from the net container:{self._nn.net_container[0].in_features}")
-            # obs = torch.zeros(1, 4) # self._nn.net_container[0].in_features
-            obs = torch.zeros(1, self._nn.net_container[0].in_features)
-            # print(obs)
+            obs = torch.zeros(1, self.actor[0].in_features).to(device)
             torch.onnx.export(
-                self.model, # self -- this should be wrong -- self.model -- fail self._nn.forward(self._nn)
+                self, # self -- this should be wrong -- self.model -- fail self._nn.forward(self._nn)
                 obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
@@ -221,17 +205,23 @@ This need to be in the template inside the SKRL
 class MyModel(torch.nn.Module):
     def __init__(self, policy):
         super(MyModel, self).__init__()
-        self.policy = policy
-        # # Define the sequential part
-        # self.sequential = policy.net_container 
-        # # Define the linear part
-        # self.linear = policy.policy_layer
+
+        # Combine net_container and policy_layer into one Sequential module
+        modules = list(policy.net_container.children())  # unpack all layers
+        modules.append(policy.policy_layer)              # add final policy layer
+
+        self.actor = torch.nn.Sequential(*modules)
 
     def forward(self, x):
-        for name, module in self.policy._modules.items():
-            print(f"Submodule name: {name}, Submodule: {module}") 
-            if name == "value_layer":
-                continue
-            else:
-                x = module(x)
-        return x
+        # for name, module in self.policy._modules.items():
+        #     print(f"Submodule name: {name}, Submodule: {module}") 
+        #     if name == "value_layer":
+        #         continue
+        #     else:
+        #         x = module(x)
+        # return x
+        return self.actor(x)
+    
+# test output
+# exporter = _OnnxPolicyExporter(False, policy, normalizer)
+# print(exporter)
