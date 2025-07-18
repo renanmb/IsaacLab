@@ -176,7 +176,7 @@ class _OnnxPolicyExporter(torch.nn.Module):
                 obs, # model input (or a tuple for multiple inputs)
                 os.path.join(path, filename),
                 export_params=True,
-                opset_version=11,
+                opset_version=16, # started at 11
                 verbose=self.verbose,
                 input_names=["obs"],
                 output_names=["actions"], # "taken_actions"
